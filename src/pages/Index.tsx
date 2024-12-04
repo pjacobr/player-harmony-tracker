@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Player } from "@/types/player";
 import { PlayerCard } from "@/components/PlayerCard";
 import { TeamDisplay } from "@/components/TeamDisplay";
+import { MatchScoreForm } from "@/components/MatchScoreForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { calculateHandicap, balanceTeams } from "@/utils/calculations";
@@ -60,8 +61,27 @@ const Index = () => {
     setPlayers(players.map(p => p.id === id ? { ...p, isSelected: !p.isSelected } : p));
   };
 
+  const handleMatchScores = (scores: { id: string; kills: number; deaths: number; assists: number }[]) => {
+    setPlayers(players.map(player => {
+      const matchScore = scores.find(score => score.id === player.id);
+      if (matchScore) {
+        const newKills = player.kills + matchScore.kills;
+        const newDeaths = player.deaths + matchScore.deaths;
+        const newAssists = player.assists + matchScore.assists;
+        return {
+          ...player,
+          kills: newKills,
+          deaths: newDeaths,
+          assists: newAssists,
+          handicap: calculateHandicap(newKills, newDeaths, newAssists)
+        };
+      }
+      return player;
+    }));
+  };
+
   const { teamA, teamB } = balanceTeams(players);
-  const selectedCount = players.filter(p => p.isSelected).length;
+  const selectedPlayers = players.filter(p => p.isSelected);
 
   return (
     <div className="min-h-screen bg-gaming-background text-white p-4">
@@ -78,11 +98,20 @@ const Index = () => {
           <Button onClick={handleAddPlayer}>Add Player</Button>
         </div>
 
-        {selectedCount > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">Balanced Teams</h2>
-            <TeamDisplay teamA={teamA} teamB={teamB} />
-          </div>
+        {selectedPlayers.length > 0 && (
+          <>
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4">Balanced Teams</h2>
+              <TeamDisplay teamA={teamA} teamB={teamB} />
+            </div>
+            
+            <div className="mb-8">
+              <MatchScoreForm
+                selectedPlayers={selectedPlayers}
+                onScoreSubmit={handleMatchScores}
+              />
+            </div>
+          </>
         )}
 
         <div>

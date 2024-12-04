@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { ScreenshotUpload } from "./ScreenshotUpload";
 
 interface MatchScoreFormProps {
   selectedPlayers: Player[];
@@ -45,53 +46,73 @@ export const MatchScoreForm = ({ selectedPlayers, onScoreSubmit }: MatchScoreFor
     }));
   };
 
+  const handleScoresDetected = (detectedScores: { id: string; kills: number; deaths: number; assists: number }[]) => {
+    const newScores = { ...scores };
+    detectedScores.forEach(({ id, kills, deaths, assists }) => {
+      if (newScores[id]) {
+        newScores[id] = { kills, deaths, assists };
+      }
+    });
+    setScores(newScores);
+  };
+
   if (selectedPlayers.length === 0) {
     return null;
   }
 
   return (
-    <Card className="p-4 bg-gaming-card">
-      <h2 className="text-xl font-bold mb-4 text-gaming-accent">Record Match Scores</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {selectedPlayers.map(player => (
-          <div key={player.id} className="space-y-2">
-            <h3 className="font-semibold">{player.name}</h3>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="flex flex-col">
-                <span className="text-sm text-muted-foreground mb-1">Kills</span>
-                <Input
-                  type="number"
-                  placeholder="Kills"
-                  min="0"
-                  value={scores[player.id]?.kills || 0}
-                  onChange={(e) => handleScoreChange(player.id, 'kills', e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm text-muted-foreground mb-1">Deaths</span>
-                <Input
-                  type="number"
-                  placeholder="Deaths"
-                  min="0"
-                  value={scores[player.id]?.deaths || 0}
-                  onChange={(e) => handleScoreChange(player.id, 'deaths', e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm text-muted-foreground mb-1">Assists</span>
-                <Input
-                  type="number"
-                  placeholder="Assists"
-                  min="0"
-                  value={scores[player.id]?.assists || 0}
-                  onChange={(e) => handleScoreChange(player.id, 'assists', e.target.value)}
-                />
+    <div className="space-y-4">
+      <ScreenshotUpload 
+        onScoresDetected={handleScoresDetected}
+        players={selectedPlayers}
+      />
+      
+      <Card className="p-4 bg-gaming-card">
+        <h2 className="text-xl font-bold mb-4 text-gaming-accent">Record Match Scores</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {selectedPlayers.map(player => (
+            <div key={player.id} className="space-y-2">
+              <h3 className="font-semibold">{player.name}</h3>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="flex flex-col">
+                  <span className="text-sm text-muted-foreground mb-1">Kills</span>
+                  <Input
+                    type="number"
+                    placeholder="Kills"
+                    min="0"
+                    value={scores[player.id]?.kills || 0}
+                    onChange={(e) => handleScoreChange(player.id, 'kills', e.target.value)}
+                    className="text-black bg-white"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm text-muted-foreground mb-1">Deaths</span>
+                  <Input
+                    type="number"
+                    placeholder="Deaths"
+                    min="0"
+                    value={scores[player.id]?.deaths || 0}
+                    onChange={(e) => handleScoreChange(player.id, 'deaths', e.target.value)}
+                    className="text-black bg-white"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm text-muted-foreground mb-1">Assists</span>
+                  <Input
+                    type="number"
+                    placeholder="Assists"
+                    min="0"
+                    value={scores[player.id]?.assists || 0}
+                    onChange={(e) => handleScoreChange(player.id, 'assists', e.target.value)}
+                    className="text-black bg-white"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-        <Button type="submit" className="w-full">Record Scores</Button>
-      </form>
-    </Card>
+          ))}
+          <Button type="submit" className="w-full">Record Scores</Button>
+        </form>
+      </Card>
+    </div>
   );
 };

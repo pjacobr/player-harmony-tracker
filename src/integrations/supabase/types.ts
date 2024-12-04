@@ -39,6 +39,27 @@ export type Database = {
         }
         Relationships: []
       }
+      screenshot_analyses: {
+        Row: {
+          analysis_result: Json | null
+          created_at: string
+          id: string
+          image_path: string
+        }
+        Insert: {
+          analysis_result?: Json | null
+          created_at?: string
+          id?: string
+          image_path: string
+        }
+        Update: {
+          analysis_result?: Json | null
+          created_at?: string
+          id?: string
+          image_path?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

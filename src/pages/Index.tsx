@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Player } from "@/types/player";
 import { PlayerCard } from "@/components/PlayerCard";
 import { TeamDisplay } from "@/components/TeamDisplay";
@@ -7,11 +7,102 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { calculateHandicap, balanceTeams } from "@/utils/calculations";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Index = () => {
-  const [players, setPlayers] = useState<Player[]>([]);
   const [newPlayerName, setNewPlayerName] = useState("");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch players
+  const { data: players = [], isLoading } = useQuery({
+    queryKey: ['players'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('players')
+        .select('*')
+        .order('created_at', { ascending: true });
+      
+      if (error) throw error;
+      return data.map(player => ({ ...player, isSelected: false }));
+    }
+  });
+
+  // Add player mutation
+  const addPlayerMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const { data, error } = await supabase
+        .from('players')
+        .insert([{ name }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['players'] });
+      toast({
+        title: "Success",
+        description: "Player added successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add player",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Update player mutation
+  const updatePlayerMutation = useMutation({
+    mutationFn: async (player: Player) => {
+      const { data, error } = await supabase
+        .from('players')
+        .update({
+          name: player.name,
+          kills: player.kills,
+          deaths: player.deaths,
+          assists: player.assists,
+          handicap: player.handicap
+        })
+        .eq('id', player.id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['players'] });
+      toast({
+        title: "Success",
+        description: "Player updated successfully",
+      });
+    }
+  });
+
+  // Delete player mutation
+  const deletePlayerMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('players')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['players'] });
+      toast({
+        title: "Success",
+        description: "Player deleted successfully",
+      });
+    }
+  });
 
   const handleAddPlayer = () => {
     if (!newPlayerName.trim()) {
@@ -23,65 +114,51 @@ const Index = () => {
       return;
     }
 
-    const newPlayer: Player = {
-      id: crypto.randomUUID(),
-      name: newPlayerName,
-      kills: 0,
-      deaths: 0,
-      assists: 0,
-      handicap: calculateHandicap(0, 0, 0),
-      isSelected: false,
-    };
-
-    setPlayers([...players, newPlayer]);
+    addPlayerMutation.mutate(newPlayerName);
     setNewPlayerName("");
-    toast({
-      title: "Success",
-      description: "Player added successfully",
-    });
   };
 
   const handleUpdatePlayer = (updatedPlayer: Player) => {
-    setPlayers(players.map(p => p.id === updatedPlayer.id ? updatedPlayer : p));
-    toast({
-      title: "Success",
-      description: "Player updated successfully",
-    });
+    updatePlayerMutation.mutate(updatedPlayer);
   };
 
   const handleDeletePlayer = (id: string) => {
-    setPlayers(players.filter(p => p.id !== id));
-    toast({
-      title: "Success",
-      description: "Player deleted successfully",
-    });
+    deletePlayerMutation.mutate(id);
   };
 
   const handleToggleSelect = (id: string) => {
-    setPlayers(players.map(p => p.id === id ? { ...p, isSelected: !p.isSelected } : p));
+    const updatedPlayers = players.map(p => 
+      p.id === id ? { ...p, isSelected: !p.isSelected } : p
+    );
+    queryClient.setQueryData(['players'], updatedPlayers);
   };
 
-  const handleMatchScores = (scores: { id: string; kills: number; deaths: number; assists: number }[]) => {
-    setPlayers(players.map(player => {
-      const matchScore = scores.find(score => score.id === player.id);
-      if (matchScore) {
-        const newKills = player.kills + matchScore.kills;
-        const newDeaths = player.deaths + matchScore.deaths;
-        const newAssists = player.assists + matchScore.assists;
-        return {
+  const handleMatchScores = async (scores: { id: string; kills: number; deaths: number; assists: number }[]) => {
+    for (const score of scores) {
+      const player = players.find(p => p.id === score.id);
+      if (player) {
+        const newKills = player.kills + score.kills;
+        const newDeaths = player.deaths + score.deaths;
+        const newAssists = player.assists + score.assists;
+        const newHandicap = calculateHandicap(newKills, newDeaths, newAssists);
+        
+        await updatePlayerMutation.mutateAsync({
           ...player,
           kills: newKills,
           deaths: newDeaths,
           assists: newAssists,
-          handicap: calculateHandicap(newKills, newDeaths, newAssists)
-        };
+          handicap: newHandicap
+        });
       }
-      return player;
-    }));
+    }
   };
 
   const { teamA, teamB } = balanceTeams(players);
   const selectedPlayers = players.filter(p => p.isSelected);
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gaming-background text-white p-4">

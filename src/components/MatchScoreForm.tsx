@@ -57,27 +57,36 @@ export const MatchScoreForm = ({ selectedPlayers, onScoreSubmit }: MatchScoreFor
           <div key={player.id} className="space-y-2">
             <h3 className="font-semibold">{player.name}</h3>
             <div className="grid grid-cols-3 gap-2">
-              <Input
-                type="number"
-                placeholder="Kills"
-                min="0"
-                value={scores[player.id]?.kills || 0}
-                onChange={(e) => handleScoreChange(player.id, 'kills', e.target.value)}
-              />
-              <Input
-                type="number"
-                placeholder="Deaths"
-                min="0"
-                value={scores[player.id]?.deaths || 0}
-                onChange={(e) => handleScoreChange(player.id, 'deaths', e.target.value)}
-              />
-              <Input
-                type="number"
-                placeholder="Assists"
-                min="0"
-                value={scores[player.id]?.assists || 0}
-                onChange={(e) => handleScoreChange(player.id, 'assists', e.target.value)}
-              />
+              <div className="flex flex-col">
+                <span className="text-sm text-muted-foreground mb-1">Kills</span>
+                <Input
+                  type="number"
+                  placeholder="Kills"
+                  min="0"
+                  value={scores[player.id]?.kills || 0}
+                  onChange={(e) => handleScoreChange(player.id, 'kills', e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm text-muted-foreground mb-1">Deaths</span>
+                <Input
+                  type="number"
+                  placeholder="Deaths"
+                  min="0"
+                  value={scores[player.id]?.deaths || 0}
+                  onChange={(e) => handleScoreChange(player.id, 'deaths', e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm text-muted-foreground mb-1">Assists</span>
+                <Input
+                  type="number"
+                  placeholder="Assists"
+                  min="0"
+                  value={scores[player.id]?.assists || 0}
+                  onChange={(e) => handleScoreChange(player.id, 'assists', e.target.value)}
+                />
+              </div>
             </div>
           </div>
         ))}

@@ -34,7 +34,4 @@
   body {
     @apply bg-background text-foreground;
   }
-  input {
-    @apply text-white;
-  }
 }

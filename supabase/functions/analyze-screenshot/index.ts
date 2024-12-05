@@ -31,14 +31,14 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert at analyzing game screenshots. For each player visible in the screenshot, extract their kills, deaths, and assists. Return ONLY a JSON object in this exact format, nothing else: {"playerName": {"kills": number, "deaths": number, "assists": number}}',
+            content: 'You are an expert at analyzing game screenshots. For each player visible in the screenshot, extract their kills, deaths, and assists. Return ONLY a JSON object with no markdown formatting in this exact format: {"playerName": {"kills": number, "deaths": number, "assists": number}}',
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: 'Extract the K/D/A scores from this screenshot. Return only JSON.'
+                text: 'Extract the K/D/A scores from this screenshot. Return only JSON, no markdown.'
               },
               {
                 type: 'image_url',
@@ -56,13 +56,25 @@ serve(async (req) => {
     const data = await response.json();
     console.log('OpenAI API Response:', data);
 
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    if (!data.choices?.[0]?.message?.content) {
+      console.error('Invalid OpenAI response:', data);
       throw new Error('Invalid response from OpenAI API');
     }
 
-    // The response should now be directly parseable as JSON
-    const result = data.choices[0].message.content;
-    console.log('Parsed result:', result);
+    // Clean up the response by removing any markdown formatting
+    let result = data.choices[0].message.content;
+    // Remove markdown code block syntax if present
+    result = result.replace(/```json\n|\n```/g, '');
+    
+    console.log('Cleaned result:', result);
+
+    // Validate that the result is valid JSON
+    try {
+      JSON.parse(result);
+    } catch (e) {
+      console.error('Invalid JSON in result:', result);
+      throw new Error('OpenAI returned invalid JSON format');
+    }
 
     return new Response(
       JSON.stringify({ result }),

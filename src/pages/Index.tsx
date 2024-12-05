@@ -8,6 +8,7 @@ import { PlayerList } from "@/components/PlayerList";
 import { AddPlayerForm } from "@/components/AddPlayerForm";
 import { ScreenshotUpload } from "@/components/ScreenshotUpload";
 import { PlayerAnalytics } from "@/components/PlayerAnalytics";
+import { GameLog } from "@/components/GameLog";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -118,14 +119,17 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gaming-background text-white p-4">
       <div className="max-w-6xl mx-auto space-y-8">
-        <h1 className="text-3xl font-bold text-center mb-8">Player Handicap Tracker</h1>
-        
+        <h1 className="text-3xl font-bold text-center mb-8">
+          Player Handicap Tracker
+        </h1>
+
         <Tabs defaultValue="players" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-gaming-card">
+          <TabsList className="grid w-full grid-cols-5 bg-gaming-card">
             <TabsTrigger value="players">Players</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
             <TabsTrigger value="screenshots">Screenshots</TabsTrigger>
+            <TabsTrigger value="game-logs">Game Logs</TabsTrigger>
           </TabsList>
 
           <TabsContent value="players" className="mt-6">
@@ -133,7 +137,7 @@ const Index = () => {
             <PlayerList
               players={players}
               onUpdatePlayer={() => {
-                queryClient.invalidateQueries({ queryKey: ['players'] });
+                queryClient.invalidateQueries({ queryKey: ["players"] });
               }}
               onDeletePlayer={(id) => deletePlayerMutation.mutate(id)}
               onToggleSelect={handleToggleSelect}
@@ -152,9 +156,9 @@ const Index = () => {
 
           <TabsContent value="teams" className="mt-6">
             {selectedPlayers.length > 0 ? (
-              <TeamDisplay 
-                teamA={teamA} 
-                teamB={teamB} 
+              <TeamDisplay
+                teamA={teamA}
+                teamB={teamB}
                 onShuffle={handleShuffle}
               />
             ) : (
@@ -168,8 +172,8 @@ const Index = () => {
             {selectedPlayers.length > 0 ? (
               <ScreenshotUpload
                 onScoresDetected={(scores) => {
-                  console.log('Scores detected:', scores);
-                  queryClient.invalidateQueries({ queryKey: ['players'] });
+                  console.log("Scores detected:", scores);
+                  queryClient.invalidateQueries({ queryKey: ["players"] });
                 }}
                 players={selectedPlayers}
               />
@@ -178,6 +182,10 @@ const Index = () => {
                 Please select players to upload screenshots
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="game-logs" className="mt-6">
+            <GameLog />
           </TabsContent>
         </Tabs>
       </div>

@@ -9,7 +9,7 @@ const ParticleBackground = () => {
 
     const sketch = (p: p5) => {
       const particles: Particle[] = [];
-      const numParticles = 200;
+      const numParticles = 100; // Reduced number of particles
 
       class Particle {
         pos: p5.Vector;
@@ -18,22 +18,28 @@ const ParticleBackground = () => {
         
         constructor() {
           this.pos = p.createVector(p.random(p.width), p.random(p.height));
-          this.vel = p5.Vector.random2D().mult(0.5);
+          this.vel = p5.Vector.random2D().mult(0.3); // Reduced base velocity
           this.acc = p.createVector(0, 0);
         }
 
         update() {
-          // Follow mouse with subtle attraction
+          // Weaker mouse attraction
           if (p.mouseX !== 0 && p.mouseY !== 0) {
             const mouse = p.createVector(p.mouseX, p.mouseY);
             const dir = p5.Vector.sub(mouse, this.pos);
-            dir.normalize();
-            dir.mult(0.1);
-            this.acc = dir;
+            const distance = dir.mag();
+            
+            // Only attract particles within a certain range
+            if (distance < 200) {
+              dir.normalize();
+              // Weaker attraction force (0.02 instead of 0.1)
+              dir.mult(0.02);
+              this.acc = dir;
+            }
           }
 
           this.vel.add(this.acc);
-          this.vel.limit(2);
+          this.vel.limit(1); // Reduced maximum velocity
           this.pos.add(this.vel);
           this.acc.mult(0);
 
@@ -46,9 +52,9 @@ const ParticleBackground = () => {
 
         draw() {
           p.noStroke();
-          const alpha = p.map(this.vel.mag(), 0, 2, 50, 150);
+          const alpha = p.map(this.vel.mag(), 0, 1, 30, 100); // Reduced alpha range
           p.fill(100, 108, 255, alpha);
-          p.circle(this.pos.x, this.pos.y, 4);
+          p.circle(this.pos.x, this.pos.y, 3); // Slightly smaller particles
         }
       }
 

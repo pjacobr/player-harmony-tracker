@@ -7,6 +7,7 @@ import { balanceTeams } from "@/utils/calculations";
 import { PlayerList } from "@/components/PlayerList";
 import { AddPlayerForm } from "@/components/AddPlayerForm";
 import { ScreenshotUpload } from "@/components/ScreenshotUpload";
+import { PlayerAnalytics } from "@/components/PlayerAnalytics";
 
 const Index = () => {
   const { toast } = useToast();
@@ -118,6 +119,8 @@ const Index = () => {
 
         {selectedPlayers.length > 0 && (
           <>
+            <PlayerAnalytics players={selectedPlayers} />
+            
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-4">Balanced Teams</h2>
               <TeamDisplay teamA={teamA} teamB={teamB} />

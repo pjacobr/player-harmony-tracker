@@ -59,13 +59,13 @@ export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
               if (!active || !payload?.length) return null;
               const data = payload[0].payload.originalData;
               return (
-                <div className="bg-background p-2 rounded border">
-                  <p className="font-semibold">{data.name}</p>
-                  <p>Maximum: {data.max}</p>
-                  <p>Upper Quartile: {data.q3}</p>
-                  <p>Median: {data.median}</p>
-                  <p>Lower Quartile: {data.q1}</p>
-                  <p>Minimum: {data.min}</p>
+                <div className="bg-white p-2 rounded border border-gray-300 text-black">
+                  <p className="font-semibold text-gray-800">{data.name}</p>
+                  <p className="text-gray-700">Maximum: {data.max}</p>
+                  <p className="text-gray-700">Upper Quartile: {data.q3}</p>
+                  <p className="text-gray-700">Median: {data.median}</p>
+                  <p className="text-gray-700">Lower Quartile: {data.q1}</p>
+                  <p className="text-gray-700">Minimum: {data.min}</p>
                 </div>
               );
             }} />

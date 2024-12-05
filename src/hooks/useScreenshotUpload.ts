@@ -66,12 +66,14 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
       const parsedScores = JSON.parse(analysisData.result);
       console.log('Parsed scores:', parsedScores);
       
+      // Filter out null scores and match players
       const matchedScores = Object.entries(parsedScores)
+        .filter(([_, scores]) => scores !== null) // Filter out null scores
         .map(([name, scores]: [string, any]) => {
           const player = findBestMatchingPlayer(name, players);
           console.log(`Matching "${name}" with players:`, player?.name || 'No match found');
           
-          if (player) {
+          if (player && scores) { // Double check that we have both player and scores
             return {
               id: player.id,
               kills: scores.kills || 0,
@@ -81,9 +83,13 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
           }
           return null;
         })
-        .filter(Boolean);
+        .filter(Boolean); // Remove any null entries
 
       console.log('Matched scores:', matchedScores);
+
+      if (matchedScores.length === 0) {
+        throw new Error('No valid scores were detected from the screenshot');
+      }
 
       // Generate a unique game ID for this set of scores
       const gameId = crypto.randomUUID();
@@ -117,7 +123,7 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
       console.error('Error processing screenshot:', error);
       toast({
         title: "Error",
-        description: "Failed to analyze screenshot. Please try again.",
+        description: error.message || "Failed to analyze screenshot. Please try again.",
         variant: "destructive",
       });
     } finally {

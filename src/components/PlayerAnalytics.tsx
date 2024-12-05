@@ -5,6 +5,7 @@ import { KDAChart } from "./charts/KDAChart";
 import { PerformanceChart } from "./charts/PerformanceChart";
 import { BoxWhiskerChart } from "./charts/BoxWhiskerChart";
 import { TeamVsSoloChart } from "./charts/TeamVsSoloChart";
+import { PlayerConnectionsChart } from "./charts/PlayerConnectionsChart";
 import { calculatePlayerAverages } from "@/utils/playerStats";
 
 interface PlayerAnalyticsProps {
@@ -95,6 +96,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
         <BoxWhiskerChart data={boxPlotData} />
         <TeamVsSoloChart data={teamVsSoloData} />
       </div>
+      <PlayerConnectionsChart players={players} gameStats={gameStats} />
     </div>
   );
 };

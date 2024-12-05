@@ -24,10 +24,10 @@ const Index = () => {
       
       if (playersError) throw playersError;
 
-      // For each player, get their stats from game_scores
+      // For each player, get their stats and calculate handicap
       const playersWithStats = await Promise.all(playersData.map(async (player) => {
         // Get handicap using the database function
-        const { data: handicap } = await supabase
+        const { data: handicapResult } = await supabase
           .rpc('calculate_player_handicap', { player_uuid: player.id });
 
         // Get all game scores for the player to calculate totals
@@ -46,7 +46,7 @@ const Index = () => {
         return {
           ...player,
           ...totals,
-          handicap: handicap || 5,
+          handicap: handicapResult || 5,
           isSelected: true
         };
       }));

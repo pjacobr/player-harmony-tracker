@@ -47,22 +47,34 @@ export const MatchScoreForm = ({ selectedPlayers, onScoreSubmit }: MatchScoreFor
   };
 
   const handleScoresDetected = (detectedScores: { id: string; kills: number; deaths: number; assists: number }[]) => {
+    console.log("Received detected scores:", detectedScores);
+    
     // Create a new scores object based on the current state
     const newScores = { ...scores };
     
+    // Create a map of player IDs to their names for easier lookup
+    const playerNameMap = selectedPlayers.reduce((acc, player) => {
+      acc[player.name.toLowerCase()] = player.id;
+      return acc;
+    }, {} as { [key: string]: string });
+    
+    console.log("Player name to ID map:", playerNameMap);
+    
     // Update scores for each detected player
-    detectedScores.forEach(({ id, kills, deaths, assists }) => {
-      // Only update if we have this player in our scores object
-      if (newScores[id]) {
-        newScores[id] = { kills, deaths, assists };
-        console.log(`Updating scores for player ${id}:`, { kills, deaths, assists });
+    detectedScores.forEach(({ id: playerName, kills, deaths, assists }) => {
+      // Find the corresponding player ID using the name map
+      const playerId = playerNameMap[playerName.toLowerCase()];
+      
+      console.log(`Looking for player: ${playerName}, Found ID: ${playerId}`);
+      
+      if (playerId && newScores[playerId]) {
+        newScores[playerId] = { kills, deaths, assists };
+        console.log(`Updating scores for player ${playerId}:`, { kills, deaths, assists });
       }
     });
 
     // Update the state with all the new scores
     setScores(newScores);
-    
-    // Log the final scores state for debugging
     console.log('Updated scores state:', newScores);
   };
 

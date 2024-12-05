@@ -29,19 +29,26 @@ const Index = () => {
         const { data: handicap } = await supabase
           .rpc('calculate_player_handicap', { player_uuid: player.id });
 
+        // Get latest game stats, handling the case where there are no games
         const { data: latestStats } = await supabase
           .from('game_scores')
           .select('kills, deaths, assists')
           .eq('player_id', player.id)
           .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+          .limit(1);
+
+        // If no game stats exist, use default values
+        const stats = latestStats?.[0] || {
+          kills: 0,
+          deaths: 0,
+          assists: 0
+        };
 
         return {
           ...player,
-          kills: latestStats?.kills || 0,
-          deaths: latestStats?.deaths || 0,
-          assists: latestStats?.assists || 0,
+          kills: stats.kills,
+          deaths: stats.deaths,
+          assists: stats.assists,
           handicap: handicap || 5,
           isSelected: true
         };
@@ -122,9 +129,8 @@ const Index = () => {
             <div className="mb-8">
               <ScreenshotUpload
                 onScoresDetected={(scores) => {
-                  // Scores will be automatically saved to game_scores table
-                  // and handicaps will be updated via database trigger
                   console.log('Scores detected:', scores);
+                  queryClient.invalidateQueries({ queryKey: ['players'] });
                 }}
                 players={selectedPlayers}
               />
@@ -135,7 +141,6 @@ const Index = () => {
         <PlayerList
           players={players}
           onUpdatePlayer={() => {
-            // This is now handled by the screenshot upload
             queryClient.invalidateQueries({ queryKey: ['players'] });
           }}
           onDeletePlayer={(id) => deletePlayerMutation.mutate(id)}

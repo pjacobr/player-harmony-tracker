@@ -53,8 +53,8 @@ const ParticleBackground = () => {
         draw() {
           p.noStroke();
           const alpha = p.map(this.vel.mag(), 0, 1, 80, 180); // Increased alpha range for more opacity
-          // Brighter yellow color
-          p.fill(255, 255, 0, alpha);
+          // Bright yellow with more white mixed in
+          p.fill(255, 255, 200, alpha);
           p.circle(this.pos.x, this.pos.y, 3); // Slightly smaller particles
         }
       }

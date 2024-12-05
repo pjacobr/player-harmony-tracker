@@ -111,24 +111,24 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
       
       // Filter out null scores and match players
       const matchedScores = Object.entries(parsedScores)
-        .filter(([_, scores]) => scores !== null) // Filter out null scores
+        .filter(([_, scores]) => scores !== null)
         .map(([name, scores]: [string, any]) => {
           const player = findBestMatchingPlayer(name, players);
           console.log(`Matching "${name}" with players:`, player?.name || 'No match found');
           
-          if (player && scores) { // Double check that we have both player and scores
+          if (player && scores) {
             return {
               id: player.id,
               kills: scores.kills || 0,
               deaths: scores.deaths || 0,
               assists: scores.assists || 0,
-              team: scores.team || null, // Add team information
-              won: scores.team === winningTeam // Add win information
+              team: scores.team || null,
+              won: scores.team === winningTeam
             };
           }
           return null;
         })
-        .filter(Boolean); // Remove any null entries
+        .filter(Boolean);
 
       console.log('Matched scores:', matchedScores);
 
@@ -140,7 +140,7 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
       const gameId = crypto.randomUUID();
       console.log('Generated game ID:', gameId);
 
-      // Prepare the rows to insert
+      // Prepare the rows to insert with screenshot URL
       const rowsToInsert = matchedScores.map(score => ({
         game_id: gameId,
         player_id: score.id,
@@ -149,8 +149,9 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
         assists: score.assists,
         map_id: selectedMap,
         game_mode: gameMode,
-        team_number: score.team, // Add team number to the insert
-        won: score.won // Add win information to the insert
+        team_number: score.team,
+        won: score.won,
+        screenshot_url: publicUrl // Add the screenshot URL here
       }));
 
       console.log('Preparing to insert rows:', rowsToInsert);

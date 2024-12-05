@@ -31,14 +31,14 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert at analyzing game screenshots. Extract player scores in the format: {playerName: {kills: number, deaths: number, assists: number}}. Only include players that are visible in the screenshot.',
+            content: 'You are an expert at analyzing game screenshots. For each player visible in the screenshot, extract their kills, deaths, and assists. Return ONLY a JSON object in this exact format, nothing else: {"playerName": {"kills": number, "deaths": number, "assists": number}}',
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: 'Please analyze this game screenshot and extract the K/D/A scores for each player.'
+                text: 'Extract the K/D/A scores from this screenshot. Return only JSON.'
               },
               {
                 type: 'image_url',
@@ -60,8 +60,12 @@ serve(async (req) => {
       throw new Error('Invalid response from OpenAI API');
     }
 
+    // The response should now be directly parseable as JSON
+    const result = data.choices[0].message.content;
+    console.log('Parsed result:', result);
+
     return new Response(
-      JSON.stringify({ result: data.choices[0].message.content }),
+      JSON.stringify({ result }),
       { 
         headers: { 
           ...corsHeaders, 
@@ -71,7 +75,6 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in analyze-screenshot function:', error);
-    console.error('OpenAI API Response:', error.response);
     return new Response(
       JSON.stringify({ 
         error: error.message,

@@ -9,7 +9,7 @@ const ParticleBackground = () => {
 
     const sketch = (p: p5) => {
       const particles: Particle[] = [];
-      const numParticles = 100; // Reduced number of particles
+      const numParticles = 300; // Increased to 300 particles
 
       class Particle {
         pos: p5.Vector;
@@ -53,7 +53,8 @@ const ParticleBackground = () => {
         draw() {
           p.noStroke();
           const alpha = p.map(this.vel.mag(), 0, 1, 30, 100); // Reduced alpha range
-          p.fill(100, 108, 255, alpha);
+          // Golden color: RGB values for a rich gold tone
+          p.fill(255, 215, 0, alpha);
           p.circle(this.pos.x, this.pos.y, 3); // Slightly smaller particles
         }
       }

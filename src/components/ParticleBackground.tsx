@@ -1,111 +1,88 @@
 import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+import p5 from 'p5';
 
 const ParticleBackground = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mousePosition = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Scene setup
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    containerRef.current.appendChild(renderer.domElement);
+    const sketch = (p: p5) => {
+      const particles: Particle[] = [];
+      const numParticles = 200;
 
-    // Particle system
-    const particlesGeometry = new THREE.BufferGeometry();
-    const particleCount = 2000; // Increased particle count for more density
-    const positions = new Float32Array(particleCount * 3);
-    const velocities = new Float32Array(particleCount * 3);
+      class Particle {
+        pos: p5.Vector;
+        vel: p5.Vector;
+        acc: p5.Vector;
+        
+        constructor() {
+          this.pos = p.createVector(p.random(p.width), p.random(p.height));
+          this.vel = p5.Vector.random2D().mult(0.5);
+          this.acc = p.createVector(0, 0);
+        }
 
-    for (let i = 0; i < particleCount * 3; i += 3) {
-      // Spread particles further in z-axis and increase range
-      positions[i] = (Math.random() - 0.5) * 20;
-      positions[i + 1] = (Math.random() - 0.5) * 20;
-      positions[i + 2] = (Math.random() - 0.5) * 50; // Increased z-range
+        update() {
+          // Follow mouse with subtle attraction
+          if (p.mouseX !== 0 && p.mouseY !== 0) {
+            const mouse = p.createVector(p.mouseX, p.mouseY);
+            const dir = p5.Vector.sub(mouse, this.pos);
+            dir.normalize();
+            dir.mult(0.1);
+            this.acc = dir;
+          }
 
-      velocities[i] = (Math.random() - 0.5) * 0.02;
-      velocities[i + 1] = (Math.random() - 0.5) * 0.02;
-      velocities[i + 2] = (Math.random() - 0.5) * 0.02;
-    }
+          this.vel.add(this.acc);
+          this.vel.limit(2);
+          this.pos.add(this.vel);
+          this.acc.mult(0);
 
-    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    
-    const particlesMaterial = new THREE.PointsMaterial({
-      size: 0.1, // Slightly smaller particles
-      color: 0x646cff,
-      transparent: true,
-      opacity: 0.7,
-      blending: THREE.AdditiveBlending
-    });
+          // Wrap around edges
+          if (this.pos.x > p.width) this.pos.x = 0;
+          if (this.pos.x < 0) this.pos.x = p.width;
+          if (this.pos.y > p.height) this.pos.y = 0;
+          if (this.pos.y < 0) this.pos.y = p.height;
+        }
 
-    const particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
-    scene.add(particleSystem);
+        draw() {
+          p.noStroke();
+          const alpha = p.map(this.vel.mag(), 0, 2, 50, 150);
+          p.fill(100, 108, 255, alpha);
+          p.circle(this.pos.x, this.pos.y, 4);
+        }
+      }
 
-    camera.position.z = 10; // Moved camera back to see more particles
+      p.setup = () => {
+        const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+        canvas.position(0, 0);
+        canvas.style('z-index', '-1');
+        canvas.style('position', 'fixed');
+        
+        // Initialize particles
+        for (let i = 0; i < numParticles; i++) {
+          particles.push(new Particle());
+        }
+      };
 
-    // Mouse movement handler
-    const onMouseMove = (event: MouseEvent) => {
-      mousePosition.current = {
-        x: (event.clientX / window.innerWidth) * 2 - 1,
-        y: -(event.clientY / window.innerHeight) * 2 + 1
+      p.draw = () => {
+        p.clear();
+        particles.forEach(particle => {
+          particle.update();
+          particle.draw();
+        });
+      };
+
+      p.windowResized = () => {
+        p.resizeCanvas(p.windowWidth, p.windowHeight);
       };
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-
-    // Animation
-    const animate = () => {
-      requestAnimationFrame(animate);
-
-      const positions = particlesGeometry.attributes.position.array as Float32Array;
-
-      for (let i = 0; i < positions.length; i += 3) {
-        // Update positions based on velocities
-        positions[i] += velocities[i];
-        positions[i + 1] += velocities[i + 1];
-        positions[i + 2] += velocities[i + 2];
-
-        // Mouse influence
-        const dx = mousePosition.current.x * 10 - positions[i];
-        const dy = mousePosition.current.y * 10 - positions[i + 1];
-        const dz = 0 - positions[i + 2];
-
-        velocities[i] += dx * 0.0001;
-        velocities[i + 1] += dy * 0.0001;
-        velocities[i + 2] += dz * 0.0001;
-
-        // Boundary check with wider range
-        if (Math.abs(positions[i]) > 10) velocities[i] *= -1;
-        if (Math.abs(positions[i + 1]) > 10) velocities[i + 1] *= -1;
-        if (Math.abs(positions[i + 2]) > 50) velocities[i + 2] *= -1;
-      }
-
-      particlesGeometry.attributes.position.needsUpdate = true;
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    // Handle window resize
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-
-    window.addEventListener('resize', handleResize);
+    // Create new p5 instance
+    const p5Instance = new p5(sketch, containerRef.current);
 
     // Cleanup
     return () => {
-      if (containerRef.current) {
-        containerRef.current.removeChild(renderer.domElement);
-      }
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('resize', handleResize);
+      p5Instance.remove();
     };
   }, []);
 

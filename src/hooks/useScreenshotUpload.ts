@@ -84,11 +84,34 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
         .filter(Boolean);
 
       console.log('Matched scores:', matchedScores);
+
+      // Generate a unique game ID for this set of scores
+      const gameId = crypto.randomUUID();
+
+      // Save all scores to the game_scores table
+      const { error: insertError } = await supabase
+        .from('game_scores')
+        .insert(
+          matchedScores.map(score => ({
+            game_id: gameId,
+            player_id: score.id,
+            kills: score.kills,
+            deaths: score.deaths,
+            assists: score.assists
+          }))
+        );
+
+      if (insertError) {
+        console.error('Error saving scores:', insertError);
+        throw insertError;
+      }
+
+      console.log('Scores saved successfully to game_scores table');
       onScoresDetected(matchedScores);
       
       toast({
         title: "Success",
-        description: "Screenshot analyzed successfully",
+        description: "Screenshot analyzed and scores saved successfully",
       });
     } catch (error) {
       console.error('Error processing screenshot:', error);

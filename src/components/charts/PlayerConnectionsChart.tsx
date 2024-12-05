@@ -67,9 +67,8 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
           height={500}
           d3VelocityDecay={0.3}
           d3AlphaDecay={0.02}
-          d3Force="charge"
+          cooldownTicks={100}
           d3ForceStrength={-1000}
-          forceManyBody={() => -150}
         />
       </div>
     </div>

@@ -18,6 +18,21 @@ export const calculatePlayerAverages = (gameStats: GameStats[], players: Array<{
   });
 };
 
+interface GameResult {
+  won: boolean;
+  kills: number;
+  deaths: number;
+  assists: number;
+}
+
+interface TeamScores {
+  [key: number]: {
+    kills: number;
+    deaths: number;
+    assists: number;
+  };
+}
+
 export const calculateTeamPerformance = (
   gameStats: any[],
   player1Id: string,
@@ -49,13 +64,13 @@ export const calculateTeamPerformance = (
   }
 
   // Group games by game_id to calculate team performance
-  const gameResults = sharedGames.reduce((acc, game) => {
+  const gameResults = sharedGames.reduce<Record<string, GameResult>>((acc, game) => {
     if (!acc[game.game_id]) {
       // Get all players from this game
       const gamePlayers = gameStats.filter(g => g.game_id === game.game_id);
       
       // Calculate team scores
-      const teamScores = gamePlayers.reduce((scores, player) => {
+      const teamScores = gamePlayers.reduce<TeamScores>((scores, player) => {
         if (player.team_number) {
           if (!scores[player.team_number]) {
             scores[player.team_number] = {
@@ -88,16 +103,17 @@ export const calculateTeamPerformance = (
     return acc;
   }, {});
 
-  const wins = Object.values(gameResults).filter((result: any) => result.won).length;
-  const totalKills = Object.values(gameResults).reduce((sum: number, game: any) => sum + game.kills, 0);
-  const totalDeaths = Object.values(gameResults).reduce((sum: number, game: any) => sum + game.deaths, 0);
-  const totalAssists = Object.values(gameResults).reduce((sum: number, game: any) => sum + game.assists, 0);
+  const results = Object.values(gameResults);
+  const wins = results.filter((result) => result.won).length;
+  const totalKills = results.reduce((sum, game) => sum + game.kills, 0);
+  const totalDeaths = results.reduce((sum, game) => sum + game.deaths, 0);
+  const totalAssists = results.reduce((sum, game) => sum + game.assists, 0);
   
   const avgKDA = (totalKills + totalAssists) / Math.max(totalDeaths, 1);
-  const winRate = Object.keys(gameResults).length > 0 ? wins / Object.keys(gameResults).length : 0;
+  const winRate = results.length > 0 ? wins / results.length : 0;
 
   return {
-    gamesPlayed: Object.keys(gameResults).length,
+    gamesPlayed: results.length,
     winRate,
     avgKDA
   };

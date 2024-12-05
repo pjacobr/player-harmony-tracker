@@ -12,17 +12,42 @@ const Index = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch players
+  // Fetch players with their latest stats from game_scores
   const { data: players = [], isLoading } = useQuery({
     queryKey: ['players'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get all players
+      const { data: playersData, error: playersError } = await supabase
         .from('players')
         .select('*')
         .order('created_at', { ascending: true });
       
-      if (error) throw error;
-      return data.map(player => ({ ...player, isSelected: true }));
+      if (playersError) throw playersError;
+
+      // For each player, get their stats from game_scores
+      const playersWithStats = await Promise.all(playersData.map(async (player) => {
+        const { data: handicap } = await supabase
+          .rpc('calculate_player_handicap', { player_uuid: player.id });
+
+        const { data: latestStats } = await supabase
+          .from('game_scores')
+          .select('kills, deaths, assists')
+          .eq('player_id', player.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        return {
+          ...player,
+          kills: latestStats?.kills || 0,
+          deaths: latestStats?.deaths || 0,
+          assists: latestStats?.assists || 0,
+          handicap: handicap || 5,
+          isSelected: true
+        };
+      }));
+
+      return playersWithStats;
     }
   });
 
@@ -43,34 +68,6 @@ const Index = () => {
       toast({
         title: "Success",
         description: "Player added successfully",
-      });
-    }
-  });
-
-  // Update player mutation
-  const updatePlayerMutation = useMutation({
-    mutationFn: async (player: Player) => {
-      const { data, error } = await supabase
-        .from('players')
-        .update({
-          name: player.name,
-          kills: player.kills,
-          deaths: player.deaths,
-          assists: player.assists,
-          handicap: player.handicap
-        })
-        .eq('id', player.id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['players'] });
-      toast({
-        title: "Success",
-        description: "Player updated successfully",
       });
     }
   });
@@ -137,7 +134,10 @@ const Index = () => {
 
         <PlayerList
           players={players}
-          onUpdatePlayer={(player) => updatePlayerMutation.mutate(player)}
+          onUpdatePlayer={() => {
+            // This is now handled by the screenshot upload
+            queryClient.invalidateQueries({ queryKey: ['players'] });
+          }}
           onDeletePlayer={(id) => deletePlayerMutation.mutate(id)}
           onToggleSelect={handleToggleSelect}
         />

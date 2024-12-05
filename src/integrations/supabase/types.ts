@@ -84,30 +84,18 @@ export type Database = {
       }
       players: {
         Row: {
-          assists: number | null
           created_at: string
-          deaths: number | null
-          handicap: number | null
           id: string
-          kills: number | null
           name: string
         }
         Insert: {
-          assists?: number | null
           created_at?: string
-          deaths?: number | null
-          handicap?: number | null
           id?: string
-          kills?: number | null
           name: string
         }
         Update: {
-          assists?: number | null
           created_at?: string
-          deaths?: number | null
-          handicap?: number | null
           id?: string
-          kills?: number | null
           name?: string
         }
         Relationships: []

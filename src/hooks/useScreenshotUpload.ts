@@ -121,6 +121,7 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
               kills: scores.kills || 0,
               deaths: scores.deaths || 0,
               assists: scores.assists || 0,
+              team: scores.team || null, // Add team information
             };
           }
           return null;
@@ -145,7 +146,8 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
         deaths: score.deaths,
         assists: score.assists,
         map_id: selectedMap,
-        game_mode: gameMode
+        game_mode: gameMode,
+        team_number: score.team // Add team number to the insert
       }));
 
       console.log('Preparing to insert rows:', rowsToInsert);

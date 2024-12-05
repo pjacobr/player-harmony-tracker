@@ -32,14 +32,28 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing game screenshots. Extract the kills, deaths, assists, and game mode (Slayer or Team Slayer) for the following players: ${playerNames.join(', ')}. Return ONLY a JSON object with no markdown formatting in this format: {"gameMode": "Slayer|Team Slayer", "scores": {"playerName": {"kills": number, "deaths": number, "assists": number}}}. Try to match player names even if they're slightly different (e.g., with different capitalization or special characters).`,
+            content: `You are an expert at analyzing game screenshots. Extract the kills, deaths, assists, game mode (Slayer or Team Slayer), and team information for the following players: ${playerNames.join(', ')}. 
+            For team games, identify which team each player was on (1 or 2). 
+            Return ONLY a JSON object with no markdown formatting in this format: 
+            {
+              "gameMode": "Slayer|Team Slayer",
+              "scores": {
+                "playerName": {
+                  "kills": number,
+                  "deaths": number,
+                  "assists": number,
+                  "team": number|null
+                }
+              }
+            }. 
+            Team should be null for non-team games. Try to match player names even if they're slightly different (e.g., with different capitalization or special characters).`,
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: `Extract the game mode (Slayer or Team Slayer) and K/D/A scores for these specific players: ${playerNames.join(', ')}. Return only JSON, no markdown.`
+                text: `Extract the game mode, K/D/A scores, and team information for these specific players: ${playerNames.join(', ')}. Return only JSON, no markdown.`
               },
               {
                 type: 'image_url',

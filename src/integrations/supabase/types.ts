@@ -20,6 +20,7 @@ export type Database = {
           kills: number
           map_id: string | null
           player_id: string
+          team_number: number | null
         }
         Insert: {
           assists?: number
@@ -31,6 +32,7 @@ export type Database = {
           kills?: number
           map_id?: string | null
           player_id: string
+          team_number?: number | null
         }
         Update: {
           assists?: number
@@ -42,6 +44,7 @@ export type Database = {
           kills?: number
           map_id?: string | null
           player_id?: string
+          team_number?: number | null
         }
         Relationships: [
           {

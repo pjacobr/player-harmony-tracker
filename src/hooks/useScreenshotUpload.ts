@@ -73,8 +73,11 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
 
       console.log('Analysis completed:', analysisData);
 
-      const parsedScores = JSON.parse(analysisData.result);
-      console.log('Parsed scores:', parsedScores);
+      const parsedData = JSON.parse(analysisData.result);
+      console.log('Parsed data:', parsedData);
+      
+      const gameMode = parsedData.gameMode || 'Slayer'; // Default to Slayer if not detected
+      const parsedScores = parsedData.scores || parsedData; // Handle both new and old response formats
       
       // Filter out null scores and match players
       const matchedScores = Object.entries(parsedScores)
@@ -112,7 +115,8 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
         kills: score.kills,
         deaths: score.deaths,
         assists: score.assists,
-        map_id: selectedMap
+        map_id: selectedMap,
+        game_mode: gameMode
       }));
 
       console.log('Preparing to insert rows:', rowsToInsert);

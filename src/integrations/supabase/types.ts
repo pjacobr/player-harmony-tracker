@@ -15,6 +15,7 @@ export type Database = {
           created_at: string
           deaths: number
           game_id: string
+          game_mode: string | null
           id: string
           kills: number
           map_id: string | null
@@ -25,6 +26,7 @@ export type Database = {
           created_at?: string
           deaths?: number
           game_id?: string
+          game_mode?: string | null
           id?: string
           kills?: number
           map_id?: string | null
@@ -35,6 +37,7 @@ export type Database = {
           created_at?: string
           deaths?: number
           game_id?: string
+          game_mode?: string | null
           id?: string
           kills?: number
           map_id?: string | null

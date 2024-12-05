@@ -6,7 +6,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { format } from "date-fns";
+import { GameHeader } from "./game-log/GameHeader";
+import { GameScoreCard } from "./game-log/GameScoreCard";
 
 interface GameScore {
   game_id: string;
@@ -91,16 +92,13 @@ export function GameLog() {
           return (
             <AccordionItem key={game.id} value={game.id}>
               <AccordionTrigger className="hover:no-underline">
-                <div className="flex justify-between w-full pr-4">
-                  <span>
-                    {game.game_mode || "Unknown Mode"} -{" "}
-                    {game.map?.name || "Unknown Map"} -{" "}
-                    {format(new Date(game.created_at), "MMM d, yyyy h:mm a")}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    Winner: {winningTeam ? `Team ${winningTeam}` : winners}
-                  </span>
-                </div>
+                <GameHeader
+                  gameMode={game.game_mode}
+                  mapName={game.map?.name}
+                  createdAt={game.created_at}
+                  winners={winners}
+                  winningTeam={winningTeam}
+                />
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4">
@@ -117,24 +115,7 @@ export function GameLog() {
                     {game.scores
                       .sort((a: GameScore, b: GameScore) => b.kills - a.kills)
                       .map((score: GameScore) => (
-                        <div
-                          key={score.player_id}
-                          className={`flex justify-between items-center p-2 rounded ${
-                            score.won
-                              ? "bg-green-500/10 text-green-500"
-                              : "bg-red-500/10 text-red-500"
-                          }`}
-                        >
-                          <span className="font-medium">{score.player.name}</span>
-                          <div className="flex gap-4">
-                            {score.team_number && (
-                              <span>Team {score.team_number}</span>
-                            )}
-                            <span>
-                              {score.kills}/{score.deaths}/{score.assists}
-                            </span>
-                          </div>
-                        </div>
+                        <GameScoreCard key={score.player_id} score={score} />
                       ))}
                   </div>
                 </div>

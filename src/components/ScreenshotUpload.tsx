@@ -14,6 +14,20 @@ export const ScreenshotUpload = ({ onScoresDetected, players }: ScreenshotUpload
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  // Helper function to find the best matching player
+  const findBestMatchingPlayer = (name: string, players: Player[]) => {
+    // Convert names to lowercase for comparison
+    const searchName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    
+    return players.find(player => {
+      const playerName = player.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      // Check for exact match or if one name contains the other
+      return playerName === searchName || 
+             playerName.includes(searchName) || 
+             searchName.includes(playerName);
+    });
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -63,25 +77,30 @@ export const ScreenshotUpload = ({ onScoresDetected, players }: ScreenshotUpload
 
       console.log('Analysis completed:', analysisData);
 
-      // Parse the response and match with existing players
+      // Parse the response and match with existing players using the improved matching
       const parsedScores = JSON.parse(analysisData.result);
-      const matchedScores = Object.entries(parsedScores).map(([name, scores]: [string, any]) => {
-        const player = players.find(p => 
-          p.name.toLowerCase() === name.toLowerCase() ||
-          name.toLowerCase().includes(p.name.toLowerCase())
-        );
-        if (player) {
-          return {
-            id: player.id,
-            kills: scores.kills || 0,
-            deaths: scores.deaths || 0,
-            assists: scores.assists || 0,
-          };
-        }
-        return null;
-      }).filter(Boolean);
+      console.log('Parsed scores:', parsedScores);
+      
+      const matchedScores = Object.entries(parsedScores)
+        .map(([name, scores]: [string, any]) => {
+          const player = findBestMatchingPlayer(name, players);
+          console.log(`Matching "${name}" with players:`, player?.name || 'No match found');
+          
+          if (player) {
+            return {
+              id: player.id,
+              kills: scores.kills || 0,
+              deaths: scores.deaths || 0,
+              assists: scores.assists || 0,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean);
 
+      console.log('Matched scores:', matchedScores);
       onScoresDetected(matchedScores);
+      
       toast({
         title: "Success",
         description: "Screenshot analyzed successfully",

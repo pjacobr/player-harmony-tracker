@@ -106,6 +106,7 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
       console.log('Parsed data:', parsedData);
       
       const gameMode = parsedData.gameMode || 'Slayer'; // Default to Slayer if not detected
+      const winningTeam = parsedData.winningTeam; // Get the winning team information
       const parsedScores = parsedData.scores || parsedData; // Handle both new and old response formats
       
       // Filter out null scores and match players
@@ -122,6 +123,7 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
               deaths: scores.deaths || 0,
               assists: scores.assists || 0,
               team: scores.team || null, // Add team information
+              won: scores.team === winningTeam // Add win information
             };
           }
           return null;
@@ -147,7 +149,8 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
         assists: score.assists,
         map_id: selectedMap,
         game_mode: gameMode,
-        team_number: score.team // Add team number to the insert
+        team_number: score.team, // Add team number to the insert
+        won: score.won // Add win information to the insert
       }));
 
       console.log('Preparing to insert rows:', rowsToInsert);

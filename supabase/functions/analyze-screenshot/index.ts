@@ -32,11 +32,14 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing game screenshots. Extract the kills, deaths, assists, game mode (Slayer or Team Slayer), and team information for the following players: ${playerNames.join(', ')}. 
-            For team games, identify which team each player was on (1 or 2). 
+            content: `You are an expert at analyzing game screenshots. Extract the kills, deaths, assists, game mode (Slayer or Team Slayer), team information, and winning team for the following players: ${playerNames.join(', ')}. 
+            For team games:
+            - Identify which team each player was on (1 or 2)
+            - Determine which team won based on total kills
             Return ONLY a JSON object with no markdown formatting in this format: 
             {
               "gameMode": "Slayer|Team Slayer",
+              "winningTeam": number|null,
               "scores": {
                 "playerName": {
                   "kills": number,
@@ -46,14 +49,16 @@ serve(async (req) => {
                 }
               }
             }. 
-            Team should be null for non-team games. Try to match player names even if they're slightly different (e.g., with different capitalization or special characters).`,
+            winningTeam should be null for non-team games.
+            team should be null for non-team games.
+            Try to match player names even if they're slightly different (e.g., with different capitalization or special characters).`,
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: `Extract the game mode, K/D/A scores, and team information for these specific players: ${playerNames.join(', ')}. Return only JSON, no markdown.`
+                text: `Extract the game mode, K/D/A scores, team information, and winning team for these specific players: ${playerNames.join(', ')}. Return only JSON, no markdown.`
               },
               {
                 type: 'image_url',

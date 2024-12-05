@@ -12,9 +12,19 @@ interface UseScreenshotUploadProps {
 export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshotUploadProps) => {
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedMap, setSelectedMap] = useState<string>("");
 
   const handleFileUpload = async (file: File) => {
     if (!file) return;
+
+    if (!selectedMap) {
+      toast({
+        title: "Error",
+        description: "Please select a map before uploading a screenshot",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       setIsAnalyzing(true);
@@ -101,7 +111,8 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
         player_id: score.id,
         kills: score.kills,
         deaths: score.deaths,
-        assists: score.assists
+        assists: score.assists,
+        map_id: selectedMap
       }));
 
       console.log('Preparing to insert rows:', rowsToInsert);
@@ -138,6 +149,8 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
 
   return {
     isAnalyzing,
-    handleFileUpload
+    handleFileUpload,
+    selectedMap,
+    setSelectedMap
   };
 };

@@ -17,6 +17,7 @@ export type Database = {
           game_id: string
           id: string
           kills: number
+          map_id: string | null
           player_id: string
         }
         Insert: {
@@ -26,6 +27,7 @@ export type Database = {
           game_id?: string
           id?: string
           kills?: number
+          map_id?: string | null
           player_id: string
         }
         Update: {
@@ -35,6 +37,7 @@ export type Database = {
           game_id?: string
           id?: string
           kills?: number
+          map_id?: string | null
           player_id?: string
         }
         Relationships: [
@@ -46,6 +49,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "game_scores_map_id_fkey"
+            columns: ["map_id"]
+            isOneToOne: false
+            referencedRelation: "maps"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "game_scores_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
@@ -53,6 +63,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      maps: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       players: {
         Row: {

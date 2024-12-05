@@ -1,4 +1,5 @@
 export interface GameScore {
+  id?: string;  // Make id optional to maintain backwards compatibility
   game_id: string;
   player_id: string;
   kills: number;

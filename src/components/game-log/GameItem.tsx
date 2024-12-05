@@ -50,7 +50,13 @@ export function GameItem({ game }: GameItemProps) {
             {game.scores
               .sort((a, b) => b.kills - a.kills)
               .map((score) => (
-                <GameScoreCard key={score.player_id} score={score} />
+                <GameScoreCard 
+                  key={score.player_id} 
+                  score={{
+                    ...score,
+                    id: score.id || score.player_id  // Fallback to player_id if id is not present
+                  }} 
+                />
               ))}
           </div>
         </div>

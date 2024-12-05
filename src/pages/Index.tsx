@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Player } from "@/types/player";
 import { TeamDisplay } from "@/components/TeamDisplay";
-import { MatchScoreForm } from "@/components/MatchScoreForm";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { balanceTeams } from "@/utils/calculations";
 import { PlayerList } from "@/components/PlayerList";
 import { AddPlayerForm } from "@/components/AddPlayerForm";
+import { ScreenshotUpload } from "@/components/ScreenshotUpload";
 
 const Index = () => {
   const { toast } = useToast();
@@ -22,7 +22,6 @@ const Index = () => {
         .order('created_at', { ascending: true });
       
       if (error) throw error;
-      // All players are selected by default
       return data.map(player => ({ ...player, isSelected: true }));
     }
   });
@@ -102,37 +101,6 @@ const Index = () => {
     queryClient.setQueryData(['players'], updatedPlayers);
   };
 
-  const handleMatchScores = async (scores: { id: string; kills: number; deaths: number; assists: number }[]) => {
-    try {
-      // Insert scores into game_scores table
-      const { error } = await supabase
-        .from('game_scores')
-        .insert(
-          scores.map(score => ({
-            player_id: score.id,
-            kills: score.kills,
-            deaths: score.deaths,
-            assists: score.assists
-          }))
-        );
-
-      if (error) throw error;
-
-      queryClient.invalidateQueries({ queryKey: ['players'] });
-      toast({
-        title: "Success",
-        description: "Game scores recorded successfully",
-      });
-    } catch (error) {
-      console.error('Error recording game scores:', error);
-      toast({
-        title: "Error",
-        description: "Failed to record game scores",
-        variant: "destructive",
-      });
-    }
-  };
-
   if (isLoading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
@@ -155,9 +123,13 @@ const Index = () => {
             </div>
             
             <div className="mb-8">
-              <MatchScoreForm
-                selectedPlayers={selectedPlayers}
-                onScoreSubmit={handleMatchScores}
+              <ScreenshotUpload
+                onScoresDetected={(scores) => {
+                  // Scores will be automatically saved to game_scores table
+                  // and handicaps will be updated via database trigger
+                  console.log('Scores detected:', scores);
+                }}
+                players={selectedPlayers}
               />
             </div>
           </>

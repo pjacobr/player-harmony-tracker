@@ -20,6 +20,7 @@ export type Database = {
           kills: number
           map_id: string | null
           player_id: string
+          screenshot_url: string | null
           team_number: number | null
           won: boolean | null
         }
@@ -33,6 +34,7 @@ export type Database = {
           kills?: number
           map_id?: string | null
           player_id: string
+          screenshot_url?: string | null
           team_number?: number | null
           won?: boolean | null
         }
@@ -46,6 +48,7 @@ export type Database = {
           kills?: number
           map_id?: string | null
           player_id?: string
+          screenshot_url?: string | null
           team_number?: number | null
           won?: boolean | null
         }

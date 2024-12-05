@@ -18,6 +18,7 @@ interface GameScore {
   created_at: string;
   game_mode: string;
   team_number: number | null;
+  screenshot_url: string | null;
   map: {
     name: string;
   } | null;
@@ -42,6 +43,7 @@ export function GameLog() {
           created_at,
           game_mode,
           team_number,
+          screenshot_url,
           map:maps!game_scores_map_id_fkey(name),
           player:players!fk_player(name)
         `)
@@ -57,6 +59,7 @@ export function GameLog() {
             created_at: score.created_at,
             game_mode: score.game_mode,
             map: score.map,
+            screenshot_url: score.screenshot_url,
             scores: [],
           };
         }
@@ -100,29 +103,40 @@ export function GameLog() {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-2">
-                  {game.scores
-                    .sort((a: GameScore, b: GameScore) => b.kills - a.kills)
-                    .map((score: GameScore) => (
-                      <div
-                        key={score.player_id}
-                        className={`flex justify-between items-center p-2 rounded ${
-                          score.won
-                            ? "bg-green-500/10 text-green-500"
-                            : "bg-red-500/10 text-red-500"
-                        }`}
-                      >
-                        <span className="font-medium">{score.player.name}</span>
-                        <div className="flex gap-4">
-                          {score.team_number && (
-                            <span>Team {score.team_number}</span>
-                          )}
-                          <span>
-                            {score.kills}/{score.deaths}/{score.assists}
-                          </span>
+                <div className="space-y-4">
+                  {game.screenshot_url && (
+                    <div className="rounded-lg overflow-hidden max-w-2xl mx-auto">
+                      <img
+                        src={game.screenshot_url}
+                        alt="Game Screenshot"
+                        className="w-full h-auto object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    {game.scores
+                      .sort((a: GameScore, b: GameScore) => b.kills - a.kills)
+                      .map((score: GameScore) => (
+                        <div
+                          key={score.player_id}
+                          className={`flex justify-between items-center p-2 rounded ${
+                            score.won
+                              ? "bg-green-500/10 text-green-500"
+                              : "bg-red-500/10 text-red-500"
+                          }`}
+                        >
+                          <span className="font-medium">{score.player.name}</span>
+                          <div className="flex gap-4">
+                            {score.team_number && (
+                              <span>Team {score.team_number}</span>
+                            )}
+                            <span>
+                              {score.kills}/{score.deaths}/{score.assists}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                  </div>
                 </div>
               </AccordionContent>
             </AccordionItem>

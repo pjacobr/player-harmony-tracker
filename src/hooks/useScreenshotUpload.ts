@@ -93,26 +93,31 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
 
       // Generate a unique game ID for this set of scores
       const gameId = crypto.randomUUID();
+      console.log('Generated game ID:', gameId);
+
+      // Prepare the rows to insert
+      const rowsToInsert = matchedScores.map(score => ({
+        game_id: gameId,
+        player_id: score.id,
+        kills: score.kills,
+        deaths: score.deaths,
+        assists: score.assists
+      }));
+
+      console.log('Preparing to insert rows:', rowsToInsert);
 
       // Save all scores to the game_scores table
-      const { error: insertError } = await supabase
+      const { data: insertedData, error: insertError } = await supabase
         .from('game_scores')
-        .insert(
-          matchedScores.map(score => ({
-            game_id: gameId,
-            player_id: score.id,
-            kills: score.kills,
-            deaths: score.deaths,
-            assists: score.assists
-          }))
-        );
+        .insert(rowsToInsert)
+        .select();
 
       if (insertError) {
         console.error('Error saving scores:', insertError);
         throw insertError;
       }
 
-      console.log('Scores saved successfully to game_scores table');
+      console.log('Scores saved successfully:', insertedData);
       onScoresDetected(matchedScores);
       
       toast({

@@ -9,17 +9,16 @@ import { AddPlayerForm } from "@/components/AddPlayerForm";
 import { ScreenshotUpload } from "@/components/ScreenshotUpload";
 import { PlayerAnalytics } from "@/components/PlayerAnalytics";
 import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [shuffleKey, setShuffleKey] = useState(0);
 
-  // Fetch players with their latest stats from game_scores
   const { data: players = [], isLoading } = useQuery({
     queryKey: ['players'],
     queryFn: async () => {
-      // First get all players
       const { data: playersData, error: playersError } = await supabase
         .from('players')
         .select('*')
@@ -27,19 +26,15 @@ const Index = () => {
       
       if (playersError) throw playersError;
 
-      // For each player, get their stats and calculate handicap
       const playersWithStats = await Promise.all(playersData.map(async (player) => {
-        // Get handicap using the database function
         const { data: handicapResult } = await supabase
           .rpc('calculate_player_handicap', { player_uuid: player.id });
 
-        // Get all game scores for the player to calculate totals
         const { data: allStats } = await supabase
           .from('game_scores')
           .select('kills, deaths, assists')
           .eq('player_id', player.id);
 
-        // Calculate totals from all games, or use 0 if no games exist
         const totals = allStats?.reduce((acc, game) => ({
           kills: acc.kills + game.kills,
           deaths: acc.deaths + game.deaths,
@@ -125,21 +120,52 @@ const Index = () => {
       <div className="max-w-6xl mx-auto space-y-8">
         <h1 className="text-3xl font-bold text-center mb-8">Player Handicap Tracker</h1>
         
-        <AddPlayerForm onAddPlayer={(name) => addPlayerMutation.mutate(name)} />
+        <Tabs defaultValue="players" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-gaming-card">
+            <TabsTrigger value="players">Players</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="teams">Teams</TabsTrigger>
+            <TabsTrigger value="screenshots">Screenshots</TabsTrigger>
+          </TabsList>
 
-        {selectedPlayers.length > 0 && (
-          <>
-            <PlayerAnalytics players={selectedPlayers} />
-            
-            <div className="mb-8">
+          <TabsContent value="players" className="mt-6">
+            <AddPlayerForm onAddPlayer={(name) => addPlayerMutation.mutate(name)} />
+            <PlayerList
+              players={players}
+              onUpdatePlayer={() => {
+                queryClient.invalidateQueries({ queryKey: ['players'] });
+              }}
+              onDeletePlayer={(id) => deletePlayerMutation.mutate(id)}
+              onToggleSelect={handleToggleSelect}
+            />
+          </TabsContent>
+
+          <TabsContent value="analytics" className="mt-6">
+            {selectedPlayers.length > 0 ? (
+              <PlayerAnalytics players={selectedPlayers} />
+            ) : (
+              <div className="text-center text-gaming-muted">
+                Please select players to view analytics
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="teams" className="mt-6">
+            {selectedPlayers.length > 0 ? (
               <TeamDisplay 
                 teamA={teamA} 
                 teamB={teamB} 
                 onShuffle={handleShuffle}
               />
-            </div>
-            
-            <div className="mb-8">
+            ) : (
+              <div className="text-center text-gaming-muted">
+                Please select players to create teams
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="screenshots" className="mt-6">
+            {selectedPlayers.length > 0 ? (
               <ScreenshotUpload
                 onScoresDetected={(scores) => {
                   console.log('Scores detected:', scores);
@@ -147,18 +173,13 @@ const Index = () => {
                 }}
                 players={selectedPlayers}
               />
-            </div>
-          </>
-        )}
-
-        <PlayerList
-          players={players}
-          onUpdatePlayer={() => {
-            queryClient.invalidateQueries({ queryKey: ['players'] });
-          }}
-          onDeletePlayer={(id) => deletePlayerMutation.mutate(id)}
-          onToggleSelect={handleToggleSelect}
-        />
+            ) : (
+              <div className="text-center text-gaming-muted">
+                Please select players to upload screenshots
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

@@ -24,7 +24,7 @@ export const UploadButton = ({ isAnalyzing, onFileSelect }: UploadButtonProps) =
         type="file"
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         onChange={handleChange}
-        accept="image/*"
+        accept="image/*,.heic"
         disabled={isAnalyzing}
       />
     </Button>

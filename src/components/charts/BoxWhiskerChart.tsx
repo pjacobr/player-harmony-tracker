@@ -1,6 +1,16 @@
-import { BarChart, Bar, ComposedChart, XAxis, YAxis, Tooltip, Legend, Line } from 'recharts';
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { GameStats } from "@/types/gameStats";
+import { Card } from "@/components/ui/card";
+import { ChartContainer } from "@/components/ui/chart";
+import { useMemo } from "react";
+import {
+  ComposedChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  RectangleProps,
+  ResponsiveContainer
+} from "recharts";
 
 interface BoxWhiskerChartProps {
   data: {
@@ -13,99 +23,137 @@ interface BoxWhiskerChartProps {
   }[];
 }
 
-export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
-  const chartConfig = {
-    box: {
-      color: "#4ade80",
-      label: "Performance Distribution"
-    }
-  };
+// Custom shape for median lines
+const MedianLine = (props: RectangleProps) => {
+  const { x, y, width } = props;
+  if (x == null || y == null || width == null) return null;
+  
+  return (
+    <line 
+      x1={x} 
+      y1={y} 
+      x2={x + width} 
+      y2={y} 
+      stroke="#000" 
+      strokeWidth={2}
+    />
+  );
+};
 
-  // Transform data for the box plot visualization
-  const transformedData = data.map(item => ({
-    name: item.name,
-    // IQR box
-    q1ToQ3: item.q3 - item.q1,
-    q1: item.q1,
-    // Whiskers
-    minToQ1: item.q1 - item.min,
-    q3ToMax: item.max - item.q3,
-    // Reference points
-    min: item.min,
-    median: item.median,
-    max: item.max,
-    // Store original values for tooltip
-    originalData: item
-  }));
+// Custom shape for whisker lines
+const WhiskerLine = (props: RectangleProps) => {
+  const { x, y, width, height } = props;
+  if (x == null || y == null || width == null || height == null) return null;
 
   return (
-    <div className="p-4 bg-gaming-card rounded-lg">
-      <h3 className="text-xl font-semibold mb-4">Performance Distribution</h3>
+    <line
+      x1={x + width / 2}
+      y1={y + height}
+      x2={x + width / 2}
+      y2={y}
+      stroke="#000"
+      strokeWidth={1}
+      strokeDasharray="4"
+    />
+  );
+};
+
+export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
+  // Transform data for the stacked bar visualization
+  const transformedData = useMemo(() => 
+    data.map((item) => ({
+      name: item.name,
+      min: item.min,
+      bottomWhisker: item.q1 - item.min,
+      bottomBox: item.median - item.q1,
+      topBox: item.q3 - item.median,
+      topWhisker: item.max - item.q3,
+      // Store original values for tooltip
+      originalData: item
+    })), [data]
+  );
+
+  return (
+    <Card className="p-4 bg-gaming-card">
+      <h3 className="text-xl font-bold mb-4 text-gaming-accent">Performance Distribution</h3>
       <div className="h-[300px]">
-        <ChartContainer config={chartConfig}>
-          <ComposedChart
-            data={transformedData}
-            margin={{ top: 20, right: 20, bottom: 60, left: 20 }}
-          >
-            <XAxis 
-              dataKey="name" 
-              angle={-45} 
-              textAnchor="end" 
-              height={60} 
-              interval={0}
-            />
-            <YAxis />
-            <Tooltip content={({ active, payload }) => {
-              if (!active || !payload?.length) return null;
-              const data = payload[0].payload.originalData;
-              return (
-                <div className="bg-white p-2 rounded border border-gray-300 text-black">
-                  <p className="font-semibold text-gray-800">{data.name}</p>
-                  <p className="text-gray-700">Maximum: {data.max}</p>
-                  <p className="text-gray-700">Upper Quartile: {data.q3}</p>
-                  <p className="text-gray-700">Median: {data.median}</p>
-                  <p className="text-gray-700">Lower Quartile: {data.q1}</p>
-                  <p className="text-gray-700">Minimum: {data.min}</p>
-                </div>
-              );
-            }} />
-            <Legend />
-            {/* IQR Box */}
-            <Bar
-              dataKey="q1ToQ3"
-              stackId="box"
-              fill={chartConfig.box.color}
-              isAnimationActive={false}
-            />
-            {/* Lower whisker */}
-            <Bar
-              dataKey="minToQ1"
-              stackId="lowerWhisker"
-              fill="transparent"
-              stroke={chartConfig.box.color}
-              strokeWidth={2}
-              isAnimationActive={false}
-            />
-            {/* Upper whisker */}
-            <Bar
-              dataKey="q3ToMax"
-              stackId="upperWhisker"
-              fill="transparent"
-              stroke={chartConfig.box.color}
-              strokeWidth={2}
-              isAnimationActive={false}
-            />
-            {/* Median line */}
-            <Line
-              type="monotone"
-              dataKey="median"
-              stroke="#ffffff"
-              strokeWidth={2}
-              dot={false}
-            />
-          </ComposedChart>
+        <ChartContainer config={{}}>
+          <ResponsiveContainer>
+            <ComposedChart data={transformedData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="name" 
+                angle={-45} 
+                textAnchor="end" 
+                height={60} 
+                interval={0}
+              />
+              <YAxis />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (!active || !payload?.length) return null;
+                  const data = payload[0].payload.originalData;
+                  return (
+                    <div className="bg-white p-2 rounded border border-gray-300">
+                      <p className="font-semibold text-gray-800">{data.name}</p>
+                      <p className="text-gray-700">Maximum: {data.max}</p>
+                      <p className="text-gray-700">Upper Quartile: {data.q3}</p>
+                      <p className="text-gray-700">Median: {data.median}</p>
+                      <p className="text-gray-700">Lower Quartile: {data.q1}</p>
+                      <p className="text-gray-700">Minimum: {data.min}</p>
+                    </div>
+                  );
+                }}
+              />
+              
+              {/* Base position */}
+              <Bar stackId="boxplot" dataKey="min" fill="none" />
+              
+              {/* Bottom whisker */}
+              <Bar 
+                stackId="boxplot" 
+                dataKey="bottomWhisker" 
+                fill="none" 
+                shape={<WhiskerLine />} 
+              />
+              
+              {/* Bottom box */}
+              <Bar 
+                stackId="boxplot" 
+                dataKey="bottomBox" 
+                fill="#4F46E5" 
+                stroke="#000"
+                strokeWidth={1}
+              />
+              
+              {/* Median line */}
+              <Bar 
+                stackId="boxplot" 
+                dataKey="min" 
+                fill="none" 
+                shape={<MedianLine />} 
+              />
+              
+              {/* Top box */}
+              <Bar 
+                stackId="boxplot" 
+                dataKey="topBox" 
+                fill="#4F46E5" 
+                stroke="#000"
+                strokeWidth={1}
+              />
+              
+              {/* Top whisker */}
+              <Bar 
+                stackId="boxplot" 
+                dataKey="topWhisker" 
+                fill="none" 
+                shape={<WhiskerLine />} 
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
         </ChartContainer>
       </div>
-    </div>
+    </Card>
   );
 };

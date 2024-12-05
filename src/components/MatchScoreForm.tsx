@@ -47,13 +47,23 @@ export const MatchScoreForm = ({ selectedPlayers, onScoreSubmit }: MatchScoreFor
   };
 
   const handleScoresDetected = (detectedScores: { id: string; kills: number; deaths: number; assists: number }[]) => {
+    // Create a new scores object based on the current state
     const newScores = { ...scores };
+    
+    // Update scores for each detected player
     detectedScores.forEach(({ id, kills, deaths, assists }) => {
+      // Only update if we have this player in our scores object
       if (newScores[id]) {
         newScores[id] = { kills, deaths, assists };
+        console.log(`Updating scores for player ${id}:`, { kills, deaths, assists });
       }
     });
+
+    // Update the state with all the new scores
     setScores(newScores);
+    
+    // Log the final scores state for debugging
+    console.log('Updated scores state:', newScores);
   };
 
   if (selectedPlayers.length === 0) {

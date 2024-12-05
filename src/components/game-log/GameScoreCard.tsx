@@ -21,12 +21,25 @@ export function GameScoreCard({ score }: GameScoreProps) {
           : "bg-red-500/10 text-red-500"
       }`}
     >
-      <span className="font-medium">{score.player.name}</span>
-      <div className="flex gap-4">
-        {score.team_number && <span>Team {score.team_number}</span>}
-        <span>
-          {score.kills}/{score.deaths}/{score.assists}
-        </span>
+      <span className="font-medium w-40">{score.player.name}</span>
+      <div className="flex gap-8">
+        {score.team_number && (
+          <span className="w-20">Team {score.team_number}</span>
+        )}
+        <div className="flex gap-8 text-sm">
+          <div className="flex flex-col items-center">
+            <span className="text-gaming-muted">Kills</span>
+            <span>{score.kills}</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-gaming-muted">Deaths</span>
+            <span>{score.deaths}</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-gaming-muted">Assists</span>
+            <span>{score.assists}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

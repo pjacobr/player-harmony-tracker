@@ -1,6 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,13 +7,19 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { imageUrl } = await req.json();
-    
+    console.log('Received image URL:', imageUrl);
+
+    if (!imageUrl) {
+      throw new Error('No image URL provided');
+    }
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -31,8 +36,14 @@ serve(async (req) => {
           {
             role: 'user',
             content: [
-              { type: 'text', text: 'Please analyze this game screenshot and extract the K/D/A scores for each player.' },
-              { type: 'image_url', url: imageUrl },
+              { 
+                type: 'text', 
+                text: 'Please analyze this game screenshot and extract the K/D/A scores for each player.' 
+              },
+              { 
+                type: 'image_url', 
+                url: imageUrl 
+              },
             ],
           },
         ],
@@ -41,17 +52,35 @@ serve(async (req) => {
     });
 
     const data = await response.json();
-    console.log('GPT-4 Response:', data);
+    console.log('OpenAI API Response:', data);
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response from OpenAI API');
+    }
 
     return new Response(
       JSON.stringify({ result: data.choices[0].message.content }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     );
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in analyze-screenshot function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Failed to analyze screenshot'
+      }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
+        status: 500 
+      }
     );
   }
 });

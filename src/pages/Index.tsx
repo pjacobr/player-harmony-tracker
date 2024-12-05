@@ -8,10 +8,12 @@ import { PlayerList } from "@/components/PlayerList";
 import { AddPlayerForm } from "@/components/AddPlayerForm";
 import { ScreenshotUpload } from "@/components/ScreenshotUpload";
 import { PlayerAnalytics } from "@/components/PlayerAnalytics";
+import { useState } from "react";
 
 const Index = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [shuffleKey, setShuffleKey] = useState(0);
 
   // Fetch players with their latest stats from game_scores
   const { data: players = [], isLoading } = useQuery({
@@ -107,8 +109,16 @@ const Index = () => {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
-  const { teamA, teamB } = balanceTeams(players);
+  const { teamA, teamB } = balanceTeams(players, shuffleKey);
   const selectedPlayers = players.filter(p => p.isSelected);
+
+  const handleShuffle = () => {
+    setShuffleKey(prev => prev + 1);
+    toast({
+      title: "Teams Shuffled",
+      description: "New balanced teams have been generated",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gaming-background text-white p-4">
@@ -122,8 +132,11 @@ const Index = () => {
             <PlayerAnalytics players={selectedPlayers} />
             
             <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">Balanced Teams</h2>
-              <TeamDisplay teamA={teamA} teamB={teamB} />
+              <TeamDisplay 
+                teamA={teamA} 
+                teamB={teamB} 
+                onShuffle={handleShuffle}
+              />
             </div>
             
             <div className="mb-8">

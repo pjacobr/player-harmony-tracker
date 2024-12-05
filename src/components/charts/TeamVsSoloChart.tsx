@@ -26,10 +26,27 @@ export const TeamVsSoloChart = ({ data }: TeamVsSoloChartProps) => {
       <h3 className="text-xl font-semibold mb-4">Team vs Solo Performance</h3>
       <div className="h-[300px]">
         <ChartContainer config={chartConfig}>
-          <BarChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <XAxis dataKey="name" />
+          <BarChart data={data} margin={{ top: 20, right: 20, bottom: 50, left: 20 }}>
+            <XAxis 
+              dataKey="name" 
+              angle={-45}
+              textAnchor="end"
+              height={60}
+            />
             <YAxis />
-            <Tooltip />
+            <Tooltip 
+              content={({ active, payload }) => {
+                if (!active || !payload?.length) return null;
+                const data = payload[0].payload;
+                return (
+                  <div className="bg-white p-2 rounded border border-gray-300 text-black">
+                    <p className="font-semibold text-gray-800">{data.name}</p>
+                    <p className="text-gray-700">Solo KDA: {data.soloKDA}</p>
+                    <p className="text-gray-700">Team KDA: {data.teamKDA}</p>
+                  </div>
+                );
+              }}
+            />
             <Legend />
             <Bar dataKey="soloKDA" name="Solo KDA" fill={chartConfig.soloKDA.color} />
             <Bar dataKey="teamKDA" name="Team KDA" fill={chartConfig.teamKDA.color} />

@@ -33,7 +33,9 @@ export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
     // Reference points
     min: item.min,
     median: item.median,
-    max: item.max
+    max: item.max,
+    // Store original values for tooltip
+    originalData: item
   }));
 
   return (
@@ -43,18 +45,24 @@ export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
         <ChartContainer config={chartConfig}>
           <ComposedChart
             data={transformedData}
-            margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+            margin={{ top: 20, right: 20, bottom: 60, left: 20 }}
           >
-            <XAxis dataKey="name" />
+            <XAxis 
+              dataKey="name" 
+              angle={-45} 
+              textAnchor="end" 
+              height={60} 
+              interval={0}
+            />
             <YAxis />
             <Tooltip content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
-              const data = payload[0].payload;
+              const data = payload[0].payload.originalData;
               return (
                 <div className="bg-background p-2 rounded border">
                   <p className="font-semibold">{data.name}</p>
                   <p>Maximum: {data.max}</p>
-                  <p>Upper Quartile: {data.q1 + data.q1ToQ3}</p>
+                  <p>Upper Quartile: {data.q3}</p>
                   <p>Median: {data.median}</p>
                   <p>Lower Quartile: {data.q1}</p>
                   <p>Minimum: {data.min}</p>
@@ -67,7 +75,6 @@ export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
               dataKey="q1ToQ3"
               stackId="box"
               fill={chartConfig.box.color}
-              baseValue="q1"
               isAnimationActive={false}
             />
             {/* Lower whisker */}
@@ -77,7 +84,6 @@ export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
               fill="transparent"
               stroke={chartConfig.box.color}
               strokeWidth={2}
-              baseValue="min"
               isAnimationActive={false}
             />
             {/* Upper whisker */}
@@ -87,7 +93,6 @@ export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
               fill="transparent"
               stroke={chartConfig.box.color}
               strokeWidth={2}
-              baseValue={() => 0}
               isAnimationActive={false}
             />
             {/* Median line */}

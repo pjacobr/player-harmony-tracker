@@ -24,13 +24,14 @@ export const PerformanceChart = ({ data }: PerformanceChartProps) => {
               textAnchor="end" 
               height={70} 
               interval={0}
+              stroke="#9F9EA1"
             />
-            <YAxis />
+            <YAxis stroke="#9F9EA1" />
             <ChartTooltip />
             <Legend />
-            <Bar dataKey="avgKills" fill="#4F46E5" name="Avg Kills" />
-            <Bar dataKey="avgDeaths" fill="#DC2626" name="Avg Deaths" />
-            <Bar dataKey="avgAssists" fill="#2563EB" name="Avg Assists" />
+            <Bar dataKey="avgKills" fill="#8B5CF6" name="Avg Kills" />
+            <Bar dataKey="avgDeaths" fill="#F97316" name="Avg Deaths" />
+            <Bar dataKey="avgAssists" fill="#0EA5E9" name="Avg Assists" />
           </BarChart>
         </ChartContainer>
       </div>

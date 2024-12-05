@@ -22,11 +22,12 @@ export const KDAChart = ({ data }: KDAChartProps) => {
               textAnchor="end" 
               height={70} 
               interval={0}
+              stroke="#9F9EA1"
             />
-            <YAxis />
+            <YAxis stroke="#9F9EA1" />
             <ChartTooltip />
             <Legend />
-            <Bar dataKey="kda" fill="#6D28D9" name="KDA Ratio" />
+            <Bar dataKey="kda" fill="#D946EF" name="KDA Ratio" />
           </BarChart>
         </ChartContainer>
       </div>

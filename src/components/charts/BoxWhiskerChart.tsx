@@ -34,7 +34,7 @@ const MedianLine = (props: RectangleProps) => {
       y1={y} 
       x2={x + width} 
       y2={y} 
-      stroke="#000" 
+      stroke="#E5DEFF" 
       strokeWidth={2}
     />
   );
@@ -51,7 +51,7 @@ const WhiskerLine = (props: RectangleProps) => {
       y1={y + height}
       x2={x + width / 2}
       y2={y}
-      stroke="#000"
+      stroke="#E5DEFF"
       strokeWidth={1}
       strokeDasharray="4"
     />
@@ -80,27 +80,28 @@ export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
         <ChartContainer config={{}}>
           <ResponsiveContainer>
             <ComposedChart data={transformedData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#9F9EA1" opacity={0.2} />
               <XAxis 
                 dataKey="name" 
                 angle={-45} 
                 textAnchor="end" 
                 height={60} 
                 interval={0}
+                stroke="#9F9EA1"
               />
-              <YAxis />
+              <YAxis stroke="#9F9EA1" />
               <Tooltip
                 content={({ active, payload }) => {
                   if (!active || !payload?.length) return null;
                   const data = payload[0].payload.originalData;
                   return (
-                    <div className="bg-white p-2 rounded border border-gray-300">
-                      <p className="font-semibold text-gray-800">{data.name}</p>
-                      <p className="text-gray-700">Maximum: {data.max}</p>
-                      <p className="text-gray-700">Upper Quartile: {data.q3}</p>
-                      <p className="text-gray-700">Median: {data.median}</p>
-                      <p className="text-gray-700">Lower Quartile: {data.q1}</p>
-                      <p className="text-gray-700">Minimum: {data.min}</p>
+                    <div className="bg-gaming-card p-2 rounded border border-gaming-accent">
+                      <p className="font-semibold text-gaming-accent">{data.name}</p>
+                      <p className="text-gray-300">Maximum: {data.max}</p>
+                      <p className="text-gray-300">Upper Quartile: {data.q3}</p>
+                      <p className="text-gray-300">Median: {data.median}</p>
+                      <p className="text-gray-300">Lower Quartile: {data.q1}</p>
+                      <p className="text-gray-300">Minimum: {data.min}</p>
                     </div>
                   );
                 }}
@@ -121,8 +122,8 @@ export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
               <Bar 
                 stackId="boxplot" 
                 dataKey="bottomBox" 
-                fill="#4F46E5" 
-                stroke="#000"
+                fill="#9b87f5" 
+                stroke="#E5DEFF"
                 strokeWidth={1}
               />
               
@@ -138,8 +139,8 @@ export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
               <Bar 
                 stackId="boxplot" 
                 dataKey="topBox" 
-                fill="#4F46E5" 
-                stroke="#000"
+                fill="#9b87f5" 
+                stroke="#E5DEFF"
                 strokeWidth={1}
               />
               

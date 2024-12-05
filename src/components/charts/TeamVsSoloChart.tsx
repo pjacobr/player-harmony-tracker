@@ -12,11 +12,11 @@ interface TeamVsSoloChartProps {
 export const TeamVsSoloChart = ({ data }: TeamVsSoloChartProps) => {
   const chartConfig = {
     soloKDA: {
-      color: "#f472b6",
+      color: "#D946EF",
       label: "Solo Performance"
     },
     teamKDA: {
-      color: "#818cf8",
+      color: "#8B5CF6",
       label: "Team Performance"
     }
   };
@@ -32,17 +32,18 @@ export const TeamVsSoloChart = ({ data }: TeamVsSoloChartProps) => {
               angle={-45}
               textAnchor="end"
               height={60}
+              stroke="#9F9EA1"
             />
-            <YAxis />
+            <YAxis stroke="#9F9EA1" />
             <Tooltip 
               content={({ active, payload }) => {
                 if (!active || !payload?.length) return null;
                 const data = payload[0].payload;
                 return (
-                  <div className="bg-white p-2 rounded border border-gray-300 text-black">
-                    <p className="font-semibold text-gray-800">{data.name}</p>
-                    <p className="text-gray-700">Solo KDA: {data.soloKDA}</p>
-                    <p className="text-gray-700">Team KDA: {data.teamKDA}</p>
+                  <div className="bg-gaming-card p-2 rounded border border-gaming-accent">
+                    <p className="font-semibold text-gaming-accent">{data.name}</p>
+                    <p className="text-gray-300">Solo KDA: {data.soloKDA}</p>
+                    <p className="text-gray-300">Team KDA: {data.teamKDA}</p>
                   </div>
                 );
               }}

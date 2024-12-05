@@ -35,7 +35,8 @@ export const calculateTeamPerformance = (
     return (
       player1Game &&
       player2Game &&
-      player1Game.team_number === player2Game.team_number
+      player1Game.team_number === player2Game.team_number &&
+      player1Game.team_number !== null // Only include team games
     );
   });
 
@@ -47,20 +48,56 @@ export const calculateTeamPerformance = (
     };
   }
 
-  // Calculate combined KDA for games played together
-  const totalKills = sharedGames.reduce((sum, game) => sum + game.kills, 0);
-  const totalDeaths = sharedGames.reduce((sum, game) => sum + game.deaths, 0);
-  const totalAssists = sharedGames.reduce((sum, game) => sum + game.assists, 0);
+  // Group games by game_id to calculate team performance
+  const gameResults = sharedGames.reduce((acc, game) => {
+    if (!acc[game.game_id]) {
+      // Get all players from this game
+      const gamePlayers = gameStats.filter(g => g.game_id === game.game_id);
+      
+      // Calculate team scores
+      const teamScores = gamePlayers.reduce((scores, player) => {
+        if (player.team_number) {
+          if (!scores[player.team_number]) {
+            scores[player.team_number] = {
+              kills: 0,
+              deaths: 0,
+              assists: 0
+            };
+          }
+          scores[player.team_number].kills += player.kills;
+          scores[player.team_number].deaths += player.deaths;
+          scores[player.team_number].assists += player.assists;
+        }
+        return scores;
+      }, {});
+
+      // Determine winning team based on kills
+      const playerTeam = game.team_number;
+      const otherTeam = playerTeam === 1 ? 2 : 1;
+      
+      const playerTeamScore = teamScores[playerTeam]?.kills || 0;
+      const otherTeamScore = teamScores[otherTeam]?.kills || 0;
+      
+      acc[game.game_id] = {
+        won: playerTeamScore > otherTeamScore,
+        kills: game.kills,
+        deaths: game.deaths,
+        assists: game.assists
+      };
+    }
+    return acc;
+  }, {});
+
+  const wins = Object.values(gameResults).filter((result: any) => result.won).length;
+  const totalKills = Object.values(gameResults).reduce((sum: number, game: any) => sum + game.kills, 0);
+  const totalDeaths = Object.values(gameResults).reduce((sum: number, game: any) => sum + game.deaths, 0);
+  const totalAssists = Object.values(gameResults).reduce((sum: number, game: any) => sum + game.assists, 0);
   
   const avgKDA = (totalKills + totalAssists) / Math.max(totalDeaths, 1);
-
-  // For this example, we'll use a simple win rate calculation
-  // You might want to adjust this based on your actual game scoring system
-  const winRate = sharedGames.length > 0 ? 
-    sharedGames.filter(game => (game.kills + game.assists) > game.deaths).length / sharedGames.length : 0;
+  const winRate = Object.keys(gameResults).length > 0 ? wins / Object.keys(gameResults).length : 0;
 
   return {
-    gamesPlayed: sharedGames.length,
+    gamesPlayed: Object.keys(gameResults).length,
     winRate,
     avgKDA
   };

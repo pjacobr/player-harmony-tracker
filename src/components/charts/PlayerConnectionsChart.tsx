@@ -65,11 +65,11 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
           backgroundColor="#1F2937" // gaming.card
           width={800}
           height={500}
-          d3VelocityDecay={0.3} // Added: Slows down node movement
-          d3AlphaDecay={0.02} // Added: Makes the simulation run longer
-          linkDistance={150} // Added: Increases default distance between linked nodes
-          d3Force="charge" // Added: Configures repulsive force between nodes
-          d3ForceStrength={-1000} // Added: Increases repulsion between nodes
+          d3VelocityDecay={0.3}
+          d3AlphaDecay={0.02}
+          d3Force="charge"
+          d3ForceStrength={-1000}
+          forceManyBody={() => -150}
         />
       </div>
     </div>

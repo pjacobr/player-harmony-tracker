@@ -26,29 +26,26 @@ const Index = () => {
 
       // For each player, get their stats from game_scores
       const playersWithStats = await Promise.all(playersData.map(async (player) => {
+        // Get handicap using the database function
         const { data: handicap } = await supabase
           .rpc('calculate_player_handicap', { player_uuid: player.id });
 
-        // Get latest game stats, handling the case where there are no games
-        const { data: latestStats } = await supabase
+        // Get all game scores for the player to calculate totals
+        const { data: allStats } = await supabase
           .from('game_scores')
           .select('kills, deaths, assists')
-          .eq('player_id', player.id)
-          .order('created_at', { ascending: false })
-          .limit(1);
+          .eq('player_id', player.id);
 
-        // If no game stats exist, use default values
-        const stats = latestStats?.[0] || {
-          kills: 0,
-          deaths: 0,
-          assists: 0
-        };
+        // Calculate totals from all games, or use 0 if no games exist
+        const totals = allStats?.reduce((acc, game) => ({
+          kills: acc.kills + game.kills,
+          deaths: acc.deaths + game.deaths,
+          assists: acc.assists + game.assists
+        }), { kills: 0, deaths: 0, assists: 0 }) || { kills: 0, deaths: 0, assists: 0 };
 
         return {
           ...player,
-          kills: stats.kills,
-          deaths: stats.deaths,
-          assists: stats.assists,
+          ...totals,
           handicap: handicap || 5,
           isSelected: true
         };

@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      game_scores: {
+        Row: {
+          assists: number
+          created_at: string
+          deaths: number
+          game_id: string
+          id: string
+          kills: number
+          player_id: string
+        }
+        Insert: {
+          assists?: number
+          created_at?: string
+          deaths?: number
+          game_id?: string
+          id?: string
+          kills?: number
+          player_id: string
+        }
+        Update: {
+          assists?: number
+          created_at?: string
+          deaths?: number
+          game_id?: string
+          id?: string
+          kills?: number
+          player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_player"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_scores_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       players: {
         Row: {
           assists: number | null
@@ -65,7 +110,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_player_handicap: {
+        Args: {
+          player_uuid: string
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

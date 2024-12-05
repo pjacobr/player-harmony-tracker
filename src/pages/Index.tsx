@@ -1,17 +1,14 @@
-import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Player } from "@/types/player";
-import { PlayerCard } from "@/components/PlayerCard";
 import { TeamDisplay } from "@/components/TeamDisplay";
 import { MatchScoreForm } from "@/components/MatchScoreForm";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { calculateHandicap, balanceTeams } from "@/utils/calculations";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { balanceTeams } from "@/utils/calculations";
+import { PlayerList } from "@/components/PlayerList";
+import { AddPlayerForm } from "@/components/AddPlayerForm";
 
 const Index = () => {
-  const [newPlayerName, setNewPlayerName] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -25,7 +22,8 @@ const Index = () => {
         .order('created_at', { ascending: true });
       
       if (error) throw error;
-      return data.map(player => ({ ...player, isSelected: false }));
+      // All players are selected by default
+      return data.map(player => ({ ...player, isSelected: true }));
     }
   });
 
@@ -46,13 +44,6 @@ const Index = () => {
       toast({
         title: "Success",
         description: "Player added successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to add player",
-        variant: "destructive",
       });
     }
   });
@@ -104,28 +95,6 @@ const Index = () => {
     }
   });
 
-  const handleAddPlayer = () => {
-    if (!newPlayerName.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a player name",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    addPlayerMutation.mutate(newPlayerName);
-    setNewPlayerName("");
-  };
-
-  const handleUpdatePlayer = (updatedPlayer: Player) => {
-    updatePlayerMutation.mutate(updatedPlayer);
-  };
-
-  const handleDeletePlayer = (id: string) => {
-    deletePlayerMutation.mutate(id);
-  };
-
   const handleToggleSelect = (id: string) => {
     const updatedPlayers = players.map(p => 
       p.id === id ? { ...p, isSelected: !p.isSelected } : p
@@ -134,46 +103,49 @@ const Index = () => {
   };
 
   const handleMatchScores = async (scores: { id: string; kills: number; deaths: number; assists: number }[]) => {
-    for (const score of scores) {
-      const player = players.find(p => p.id === score.id);
-      if (player) {
-        const newKills = player.kills + score.kills;
-        const newDeaths = player.deaths + score.deaths;
-        const newAssists = player.assists + score.assists;
-        const newHandicap = calculateHandicap(newKills, newDeaths, newAssists);
-        
-        await updatePlayerMutation.mutateAsync({
-          ...player,
-          kills: newKills,
-          deaths: newDeaths,
-          assists: newAssists,
-          handicap: newHandicap
-        });
-      }
+    try {
+      // Insert scores into game_scores table
+      const { error } = await supabase
+        .from('game_scores')
+        .insert(
+          scores.map(score => ({
+            player_id: score.id,
+            kills: score.kills,
+            deaths: score.deaths,
+            assists: score.assists
+          }))
+        );
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['players'] });
+      toast({
+        title: "Success",
+        description: "Game scores recorded successfully",
+      });
+    } catch (error) {
+      console.error('Error recording game scores:', error);
+      toast({
+        title: "Error",
+        description: "Failed to record game scores",
+        variant: "destructive",
+      });
     }
   };
-
-  const { teamA, teamB } = balanceTeams(players);
-  const selectedPlayers = players.filter(p => p.isSelected);
 
   if (isLoading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
+
+  const { teamA, teamB } = balanceTeams(players);
+  const selectedPlayers = players.filter(p => p.isSelected);
 
   return (
     <div className="min-h-screen bg-gaming-background text-white p-4">
       <div className="max-w-6xl mx-auto space-y-8">
         <h1 className="text-3xl font-bold text-center mb-8">Player Handicap Tracker</h1>
         
-        <div className="flex gap-4 mb-8">
-          <Input
-            placeholder="Enter player name"
-            value={newPlayerName}
-            onChange={(e) => setNewPlayerName(e.target.value)}
-            className="max-w-xs"
-          />
-          <Button onClick={handleAddPlayer}>Add Player</Button>
-        </div>
+        <AddPlayerForm onAddPlayer={(name) => addPlayerMutation.mutate(name)} />
 
         {selectedPlayers.length > 0 && (
           <>
@@ -191,20 +163,12 @@ const Index = () => {
           </>
         )}
 
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Players</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {players.map(player => (
-              <PlayerCard
-                key={player.id}
-                player={player}
-                onUpdate={handleUpdatePlayer}
-                onDelete={handleDeletePlayer}
-                onToggleSelect={handleToggleSelect}
-              />
-            ))}
-          </div>
-        </div>
+        <PlayerList
+          players={players}
+          onUpdatePlayer={(player) => updatePlayerMutation.mutate(player)}
+          onDeletePlayer={(id) => deletePlayerMutation.mutate(id)}
+          onToggleSelect={handleToggleSelect}
+        />
       </div>
     </div>
   );

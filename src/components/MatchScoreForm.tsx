@@ -49,6 +49,7 @@ export const MatchScoreForm = ({ selectedPlayers, onScoreSubmit }: MatchScoreFor
     
     const newScores = { ...scores };
     
+    // Create a map of lowercase player names to their IDs
     const playerNameMap = selectedPlayers.reduce((acc, player) => {
       acc[player.name.toLowerCase()] = player.id;
       return acc;
@@ -56,19 +57,21 @@ export const MatchScoreForm = ({ selectedPlayers, onScoreSubmit }: MatchScoreFor
     
     console.log("Player name to ID map:", playerNameMap);
     
+    // For each detected score, find the matching player by name and update their score
     detectedScores.forEach(({ id: playerName, kills, deaths, assists }) => {
+      // Find the player ID using the name map
       const playerId = playerNameMap[playerName.toLowerCase()];
       
-      console.log(`Looking for player: ${playerName}, Found ID: ${playerId}`);
-      
-      if (playerId && newScores[playerId]) {
+      if (playerId) {
+        console.log(`Updating scores for player ${playerName} (ID: ${playerId}):`, { kills, deaths, assists });
         newScores[playerId] = { kills, deaths, assists };
-        console.log(`Updating scores for player ${playerId}:`, { kills, deaths, assists });
+      } else {
+        console.log(`No matching player found for name: ${playerName}`);
       }
     });
 
-    setScores(newScores);
     console.log('Updated scores state:', newScores);
+    setScores(newScores);
   };
 
   if (selectedPlayers.length === 0) {

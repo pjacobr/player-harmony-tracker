@@ -20,18 +20,35 @@ export const ScreenshotUpload = ({ onScoresDetected, players }: ScreenshotUpload
 
     try {
       setIsAnalyzing(true);
+      console.log('Starting file upload...');
 
-      // Upload to Supabase Storage
+      // Create a unique filename
+      const timestamp = Date.now();
+      const fileExt = file.name.split('.').pop();
+      const fileName = `screenshot-${timestamp}.${fileExt}`;
+
+      // Upload to Supabase Storage with explicit content type
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('screenshots')
-        .upload(`screenshot-${Date.now()}.png`, file);
+        .upload(fileName, file, {
+          contentType: file.type,
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('File uploaded successfully:', uploadData);
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('screenshots')
         .getPublicUrl(uploadData.path);
+
+      console.log('Public URL generated:', publicUrl);
 
       // Analyze with GPT-4 Vision
       const { data: analysisData, error: analysisError } = await supabase.functions
@@ -39,7 +56,12 @@ export const ScreenshotUpload = ({ onScoresDetected, players }: ScreenshotUpload
           body: { imageUrl: publicUrl },
         });
 
-      if (analysisError) throw analysisError;
+      if (analysisError) {
+        console.error('Analysis error:', analysisError);
+        throw analysisError;
+      }
+
+      console.log('Analysis completed:', analysisData);
 
       // Parse the response and match with existing players
       const parsedScores = JSON.parse(analysisData.result);
@@ -68,7 +90,7 @@ export const ScreenshotUpload = ({ onScoresDetected, players }: ScreenshotUpload
       console.error('Error processing screenshot:', error);
       toast({
         title: "Error",
-        description: "Failed to analyze screenshot",
+        description: "Failed to analyze screenshot. Please try again.",
         variant: "destructive",
       });
     } finally {

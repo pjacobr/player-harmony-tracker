@@ -52,9 +52,9 @@ const ParticleBackground = () => {
 
         draw() {
           p.noStroke();
-          const alpha = p.map(this.vel.mag(), 0, 1, 30, 100); // Reduced alpha range
-          // Golden color: RGB values for a rich gold tone
-          p.fill(255, 215, 0, alpha);
+          const alpha = p.map(this.vel.mag(), 0, 1, 80, 180); // Increased alpha range for more opacity
+          // Brighter yellow color
+          p.fill(255, 255, 0, alpha);
           p.circle(this.pos.x, this.pos.y, 3); // Slightly smaller particles
         }
       }

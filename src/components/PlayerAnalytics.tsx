@@ -10,7 +10,7 @@ interface PlayerAnalyticsProps {
 }
 
 interface GameStats {
-  game_id: string;
+  player_id: string;
   kills: number;
   deaths: number;
   assists: number;
@@ -21,21 +21,25 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
   const { data: gameStats } = useQuery({
     queryKey: ['gameStats'],
     queryFn: async () => {
+      // Get all game stats for the selected players
+      const playerIds = players.map(p => p.id);
       const { data, error } = await supabase
         .from('game_scores')
         .select('*')
+        .in('player_id', playerIds)
         .order('created_at', { ascending: true });
       
       if (error) throw error;
       return data as GameStats[];
-    }
+    },
+    enabled: players.length > 0
   });
 
   const calculateAverages = () => {
     if (!gameStats || gameStats.length === 0) return [];
 
     const playerStats = players.map(player => {
-      const playerGames = gameStats.filter(game => game.game_id === player.id);
+      const playerGames = gameStats.filter(game => game.player_id === player.id);
       const totalGames = playerGames.length || 1;
 
       return {
@@ -52,6 +56,17 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
   };
 
   const averageStats = calculateAverages();
+
+  if (!gameStats || gameStats.length === 0) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold">Player Analytics</h2>
+        <Card className="p-4 bg-gaming-card">
+          <p className="text-gaming-muted">No game data available for the selected players.</p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

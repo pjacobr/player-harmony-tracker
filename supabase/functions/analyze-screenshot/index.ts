@@ -13,8 +13,9 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl } = await req.json();
+    const { imageUrl, playerNames } = await req.json();
     console.log('Received image URL:', imageUrl);
+    console.log('Player names to match:', playerNames);
 
     if (!imageUrl) {
       throw new Error('No image URL provided');
@@ -31,14 +32,14 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert at analyzing game screenshots. For each player visible in the screenshot, extract their kills, deaths, and assists. Return ONLY a JSON object with no markdown formatting in this exact format: {"playerName": {"kills": number, "deaths": number, "assists": number}}',
+            content: `You are an expert at analyzing game screenshots. Extract the kills, deaths, and assists for the following players: ${playerNames.join(', ')}. Return ONLY a JSON object with no markdown formatting in this exact format: {"playerName": {"kills": number, "deaths": number, "assists": number}}. Try to match player names even if they're slightly different (e.g., with different capitalization or special characters).`,
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: 'Extract the K/D/A scores from this screenshot. Return only JSON, no markdown.'
+                text: `Extract the K/D/A scores for these specific players: ${playerNames.join(', ')}. Return only JSON, no markdown.`
               },
               {
                 type: 'image_url',

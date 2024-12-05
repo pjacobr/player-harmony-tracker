@@ -64,10 +64,17 @@ export const ScreenshotUpload = ({ onScoresDetected, players }: ScreenshotUpload
 
       console.log('Public URL generated:', publicUrl);
 
+      // Get player names for the API
+      const playerNames = players.map(p => p.name);
+      console.log('Sending player names to match:', playerNames);
+
       // Analyze with GPT-4 Vision
       const { data: analysisData, error: analysisError } = await supabase.functions
         .invoke('analyze-screenshot', {
-          body: { imageUrl: publicUrl },
+          body: { 
+            imageUrl: publicUrl,
+            playerNames: playerNames
+          },
         });
 
       if (analysisError) {

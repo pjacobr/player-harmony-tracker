@@ -36,14 +36,14 @@ serve(async (req) => {
           {
             role: 'user',
             content: [
-              { 
-                type: 'text', 
-                text: 'Please analyze this game screenshot and extract the K/D/A scores for each player.' 
+              {
+                type: 'text',
+                text: 'Please analyze this game screenshot and extract the K/D/A scores for each player.'
               },
-              { 
-                type: 'image_url', 
-                url: imageUrl 
-              },
+              {
+                type: 'image_url',
+                image_url: imageUrl
+              }
             ],
           },
         ],
@@ -69,6 +69,7 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in analyze-screenshot function:', error);
+    console.error('OpenAI API Response:', error.response);
     return new Response(
       JSON.stringify({ 
         error: error.message,

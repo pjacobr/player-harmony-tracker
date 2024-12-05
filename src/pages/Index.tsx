@@ -11,6 +11,7 @@ import { PlayerAnalytics } from "@/components/PlayerAnalytics";
 import { GameLog } from "@/components/GameLog";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ParticleBackground from "@/components/ParticleBackground";
 
 const Index = () => {
   const { toast } = useToast();
@@ -118,6 +119,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gaming-background text-white p-4">
+      <ParticleBackground />
       <div className="max-w-6xl mx-auto space-y-8">
         <h1 className="text-3xl font-bold text-center mb-8">
           Player Handicap Tracker

@@ -21,6 +21,7 @@ export type Database = {
           map_id: string | null
           player_id: string
           team_number: number | null
+          won: boolean | null
         }
         Insert: {
           assists?: number
@@ -33,6 +34,7 @@ export type Database = {
           map_id?: string | null
           player_id: string
           team_number?: number | null
+          won?: boolean | null
         }
         Update: {
           assists?: number
@@ -45,6 +47,7 @@ export type Database = {
           map_id?: string | null
           player_id?: string
           team_number?: number | null
+          won?: boolean | null
         }
         Relationships: [
           {

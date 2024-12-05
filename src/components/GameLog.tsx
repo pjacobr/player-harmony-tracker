@@ -1,32 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { GameHeader } from "./game-log/GameHeader";
-import { GameScoreCard } from "./game-log/GameScoreCard";
-
-interface GameScore {
-  game_id: string;
-  player_id: string;
-  kills: number;
-  deaths: number;
-  assists: number;
-  won: boolean;
-  created_at: string;
-  game_mode: string;
-  team_number: number | null;
-  screenshot_url: string | null;
-  map: {
-    name: string;
-  } | null;
-  player: {
-    name: string;
-  };
-}
+import { Accordion } from "@/components/ui/accordion";
+import { GameItem } from "./game-log/GameItem";
+import { GameScore } from "@/types/gameScore";
 
 export function GameLog() {
   const { data: games, isLoading } = useQuery({
@@ -80,60 +56,9 @@ export function GameLog() {
     <div className="space-y-4">
       <h2 className="text-2xl font-bold mb-4">Game Logs</h2>
       <Accordion type="single" collapsible className="w-full">
-        {games?.map((game) => {
-          let winners;
-          let winningTeam;
-
-          if (game.game_mode === "Slayer") {
-            // For Slayer, find the player with the highest kills
-            const highestKills = Math.max(...game.scores.map((s: GameScore) => s.kills));
-            winners = game.scores
-              .filter((s: GameScore) => s.kills === highestKills)
-              .map((s: GameScore) => s.player.name)
-              .join(", ");
-          } else {
-            // For other modes, use the existing team-based win logic
-            winners = game.scores
-              .filter((s: GameScore) => s.won)
-              .map((s: GameScore) => s.player.name)
-              .join(", ");
-            winningTeam = game.scores.find((s: GameScore) => s.won)?.team_number;
-          }
-
-          return (
-            <AccordionItem key={game.id} value={game.id}>
-              <AccordionTrigger className="hover:no-underline">
-                <GameHeader
-                  gameMode={game.game_mode}
-                  mapName={game.map?.name}
-                  createdAt={game.created_at}
-                  winners={winners}
-                  winningTeam={winningTeam}
-                />
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-4">
-                  {game.screenshot_url && (
-                    <div className="rounded-lg overflow-hidden max-w-2xl mx-auto">
-                      <img
-                        src={game.screenshot_url}
-                        alt="Game Screenshot"
-                        className="w-full h-auto object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="space-y-2">
-                    {game.scores
-                      .sort((a: GameScore, b: GameScore) => b.kills - a.kills)
-                      .map((score: GameScore) => (
-                        <GameScoreCard key={score.player_id} score={score} />
-                      ))}
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          );
-        })}
+        {games?.map((game) => (
+          <GameItem key={game.id} game={game} />
+        ))}
       </Accordion>
     </div>
   );

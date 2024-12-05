@@ -3,6 +3,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Player } from "@/types/player";
 import { findBestMatchingPlayer } from "@/utils/playerMatching";
+import heic2any from "heic2any";
 
 interface UseScreenshotUploadProps {
   players: Player[];
@@ -13,6 +14,30 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedMap, setSelectedMap] = useState<string>("");
+
+  const convertHeicToJpg = async (file: File): Promise<File> => {
+    if (file.type === "image/heic" || file.name.toLowerCase().endsWith('.heic')) {
+      console.log('Converting HEIC to JPEG...');
+      try {
+        const jpgBlob = await heic2any({
+          blob: file,
+          toType: "image/jpeg",
+          quality: 0.8
+        });
+        
+        // Convert the blob or blob array to a single blob
+        const finalBlob = Array.isArray(jpgBlob) ? jpgBlob[0] : jpgBlob;
+        
+        // Create a new file with .jpg extension
+        const fileName = file.name.replace(/\.heic$/i, '.jpg');
+        return new File([finalBlob], fileName, { type: 'image/jpeg' });
+      } catch (error) {
+        console.error('Error converting HEIC to JPEG:', error);
+        throw new Error('Failed to convert HEIC image to JPEG');
+      }
+    }
+    return file;
+  };
 
   const handleFileUpload = async (file: File) => {
     if (!file) return;
@@ -30,14 +55,18 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
       setIsAnalyzing(true);
       console.log('Starting file upload...');
 
+      // Convert HEIC to JPG if necessary
+      const processedFile = await convertHeicToJpg(file);
+      console.log('File processed:', processedFile.name, processedFile.type);
+
       const timestamp = Date.now();
-      const fileExt = file.name.split('.').pop();
+      const fileExt = processedFile.name.split('.').pop();
       const fileName = `screenshot-${timestamp}.${fileExt}`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('screenshots')
-        .upload(fileName, file, {
-          contentType: file.type,
+        .upload(fileName, processedFile, {
+          contentType: processedFile.type,
           cacheControl: '3600',
           upsert: false
         });

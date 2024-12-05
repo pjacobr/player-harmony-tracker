@@ -81,13 +81,24 @@ export function GameLog() {
       <h2 className="text-2xl font-bold mb-4">Game Logs</h2>
       <Accordion type="single" collapsible className="w-full">
         {games?.map((game) => {
-          const winners = game.scores
-            .filter((s: GameScore) => s.won)
-            .map((s: GameScore) => s.player.name)
-            .join(", ");
+          let winners;
+          let winningTeam;
 
-          const winningTeam = game.scores.find((s: GameScore) => s.won)
-            ?.team_number;
+          if (game.game_mode === "Slayer") {
+            // For Slayer, find the player with the highest kills
+            const highestKills = Math.max(...game.scores.map((s: GameScore) => s.kills));
+            winners = game.scores
+              .filter((s: GameScore) => s.kills === highestKills)
+              .map((s: GameScore) => s.player.name)
+              .join(", ");
+          } else {
+            // For other modes, use the existing team-based win logic
+            winners = game.scores
+              .filter((s: GameScore) => s.won)
+              .map((s: GameScore) => s.player.name)
+              .join(", ");
+            winningTeam = game.scores.find((s: GameScore) => s.won)?.team_number;
+          }
 
           return (
             <AccordionItem key={game.id} value={game.id}>

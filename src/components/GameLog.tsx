@@ -39,7 +39,7 @@ export function GameLog() {
           created_at,
           game_mode,
           team_number,
-          player:players(name)
+          player:players!fk_player(name)
         `)
         .order("created_at", { ascending: false });
 

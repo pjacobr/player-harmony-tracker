@@ -17,34 +17,35 @@ const ParticleBackground = () => {
 
     // Particle system
     const particlesGeometry = new THREE.BufferGeometry();
-    const particleCount = 1000;
+    const particleCount = 2000; // Increased particle count for more density
     const positions = new Float32Array(particleCount * 3);
     const velocities = new Float32Array(particleCount * 3);
 
     for (let i = 0; i < particleCount * 3; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 10;
-      positions[i + 1] = (Math.random() - 0.5) * 10;
-      positions[i + 2] = (Math.random() - 0.5) * 10;
+      // Spread particles further in z-axis and increase range
+      positions[i] = (Math.random() - 0.5) * 20;
+      positions[i + 1] = (Math.random() - 0.5) * 20;
+      positions[i + 2] = (Math.random() - 0.5) * 50; // Increased z-range
 
-      velocities[i] = (Math.random() - 0.5) * 0.01;
-      velocities[i + 1] = (Math.random() - 0.5) * 0.01;
-      velocities[i + 2] = (Math.random() - 0.5) * 0.01;
+      velocities[i] = (Math.random() - 0.5) * 0.02;
+      velocities[i + 1] = (Math.random() - 0.5) * 0.02;
+      velocities[i + 2] = (Math.random() - 0.5) * 0.02;
     }
 
     particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     
     const particlesMaterial = new THREE.PointsMaterial({
-      size: 0.05,
+      size: 0.1, // Slightly smaller particles
       color: 0x646cff,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.7,
       blending: THREE.AdditiveBlending
     });
 
     const particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
     scene.add(particleSystem);
 
-    camera.position.z = 5;
+    camera.position.z = 10; // Moved camera back to see more particles
 
     // Mouse movement handler
     const onMouseMove = (event: MouseEvent) => {
@@ -69,18 +70,18 @@ const ParticleBackground = () => {
         positions[i + 2] += velocities[i + 2];
 
         // Mouse influence
-        const dx = mousePosition.current.x * 5 - positions[i];
-        const dy = mousePosition.current.y * 5 - positions[i + 1];
+        const dx = mousePosition.current.x * 10 - positions[i];
+        const dy = mousePosition.current.y * 10 - positions[i + 1];
         const dz = 0 - positions[i + 2];
 
-        velocities[i] += dx * 0.00001;
-        velocities[i + 1] += dy * 0.00001;
-        velocities[i + 2] += dz * 0.00001;
+        velocities[i] += dx * 0.0001;
+        velocities[i + 1] += dy * 0.0001;
+        velocities[i + 2] += dz * 0.0001;
 
-        // Boundary check
-        if (Math.abs(positions[i]) > 5) velocities[i] *= -1;
-        if (Math.abs(positions[i + 1]) > 5) velocities[i + 1] *= -1;
-        if (Math.abs(positions[i + 2]) > 5) velocities[i + 2] *= -1;
+        // Boundary check with wider range
+        if (Math.abs(positions[i]) > 10) velocities[i] *= -1;
+        if (Math.abs(positions[i + 1]) > 10) velocities[i + 1] *= -1;
+        if (Math.abs(positions[i + 2]) > 50) velocities[i + 2] *= -1;
       }
 
       particlesGeometry.attributes.position.needsUpdate = true;

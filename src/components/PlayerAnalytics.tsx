@@ -77,7 +77,13 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
           <div className="h-[300px]">
             <ChartContainer config={{}}>
               <BarChart data={averageStats}>
-                <XAxis dataKey="name" />
+                <XAxis 
+                  dataKey="name" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={70} 
+                  interval={0}
+                />
                 <YAxis />
                 <ChartTooltip />
                 <Legend />
@@ -92,7 +98,13 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
           <div className="h-[300px]">
             <ChartContainer config={{}}>
               <BarChart data={averageStats}>
-                <XAxis dataKey="name" />
+                <XAxis 
+                  dataKey="name" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={70} 
+                  interval={0}
+                />
                 <YAxis />
                 <ChartTooltip />
                 <Legend />

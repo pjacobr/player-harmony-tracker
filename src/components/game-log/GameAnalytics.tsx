@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO, startOfDay } from "date-fns";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export function GameAnalytics() {
   const { data: games } = useQuery({
@@ -13,7 +14,12 @@ export function GameAnalytics() {
           game_id,
           created_at,
           team_number,
-          map:maps!game_scores_map_id_fkey(name)
+          map:maps!game_scores_map_id_fkey(name),
+          player:players!game_scores_player_id_fkey(name),
+          kills,
+          deaths,
+          assists,
+          won
         `);
       
       if (error) throw error;
@@ -33,7 +39,6 @@ export function GameAnalytics() {
       };
     }
     
-    // Determine if it's a team game based on team_number presence
     const gameType = game.team_number !== null ? 'team' : 'individual';
     acc[mapName][gameType].add(game.game_id);
     
@@ -71,8 +76,49 @@ export function GameAnalytics() {
       individualGames: data.individual.size,
     }));
 
+  // Calculate player statistics
+  const playerStats = games.reduce((acc, game) => {
+    const playerName = game.player?.name || "Unknown Player";
+    if (!acc[playerName]) {
+      acc[playerName] = {
+        name: playerName,
+        totalGames: 0,
+        wins: 0,
+        kills: 0,
+        deaths: 0,
+        assists: 0,
+      };
+    }
+    
+    acc[playerName].totalGames++;
+    if (game.won) acc[playerName].wins++;
+    acc[playerName].kills += game.kills;
+    acc[playerName].deaths += game.deaths;
+    acc[playerName].assists += game.assists;
+    
+    return acc;
+  }, {} as Record<string, {
+    name: string;
+    totalGames: number;
+    wins: number;
+    kills: number;
+    deaths: number;
+    assists: number;
+  }>);
+
+  const playerStatsArray = Object.values(playerStats)
+    .map(stats => ({
+      ...stats,
+      winRate: ((stats.wins / stats.totalGames) * 100).toFixed(1),
+      kda: ((stats.kills + stats.assists) / Math.max(stats.deaths, 1)).toFixed(2),
+      avgKills: (stats.kills / stats.totalGames).toFixed(1),
+      avgDeaths: (stats.deaths / stats.totalGames).toFixed(1),
+      avgAssists: (stats.assists / stats.totalGames).toFixed(1),
+    }))
+    .sort((a, b) => Number(b.kda) - Number(a.kda));
+
   return (
-    <div className="mt-8">
+    <div className="mt-8 space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <h3 className="text-xl font-semibold mb-4">Games per Map</h3>
@@ -114,6 +160,38 @@ export function GameAnalytics() {
               </LineChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-xl font-semibold mb-4">Player Statistics</h3>
+        <div className="bg-gaming-card rounded-lg p-4 overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Player</TableHead>
+                <TableHead className="text-right">Games</TableHead>
+                <TableHead className="text-right">Win Rate</TableHead>
+                <TableHead className="text-right">KDA</TableHead>
+                <TableHead className="text-right">Avg Kills</TableHead>
+                <TableHead className="text-right">Avg Deaths</TableHead>
+                <TableHead className="text-right">Avg Assists</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {playerStatsArray.map((stats) => (
+                <TableRow key={stats.name}>
+                  <TableCell className="font-medium">{stats.name}</TableCell>
+                  <TableCell className="text-right">{stats.totalGames}</TableCell>
+                  <TableCell className="text-right">{stats.winRate}%</TableCell>
+                  <TableCell className="text-right">{stats.kda}</TableCell>
+                  <TableCell className="text-right">{stats.avgKills}</TableCell>
+                  <TableCell className="text-right">{stats.avgDeaths}</TableCell>
+                  <TableCell className="text-right">{stats.avgAssists}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>

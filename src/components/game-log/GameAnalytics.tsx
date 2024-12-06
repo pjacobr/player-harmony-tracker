@@ -12,6 +12,7 @@ export function GameAnalytics() {
         .select(`
           game_id,
           created_at,
+          team_number,
           map:maps!game_scores_map_id_fkey(name)
         `);
       
@@ -22,39 +23,50 @@ export function GameAnalytics() {
 
   if (!games) return null;
 
-  // Calculate unique games per map using Sets
+  // Calculate unique games per map using Sets, separated by game type
   const gamesPerMap = games.reduce((acc, game) => {
     const mapName = game.map?.name || "Unknown Map";
     if (!acc[mapName]) {
-      acc[mapName] = new Set();
+      acc[mapName] = {
+        team: new Set(),
+        individual: new Set(),
+      };
     }
-    acc[mapName].add(game.game_id);
+    
+    // Determine if it's a team game based on team_number presence
+    const gameType = game.team_number !== null ? 'team' : 'individual';
+    acc[mapName][gameType].add(game.game_id);
+    
     return acc;
-  }, {} as Record<string, Set<string>>);
+  }, {} as Record<string, { team: Set<string>; individual: Set<string> }>);
 
-  const mapData = Object.entries(gamesPerMap).map(([name, gameIds]) => ({
+  const mapData = Object.entries(gamesPerMap).map(([name, games]) => ({
     name,
-    games: gameIds.size, // Count unique games
+    teamGames: games.team.size,
+    individualGames: games.individual.size,
   }));
 
-  // Calculate games and players per day
+  // Calculate games per day, separated by type
   const gamesByDay = games.reduce((acc, game) => {
     const day = startOfDay(parseISO(game.created_at)).toISOString();
     if (!acc[day]) {
       acc[day] = {
         date: day,
-        games: new Set([game.game_id]),
-        players: new Set(),
+        team: new Set(),
+        individual: new Set(),
       };
-    } else {
-      acc[day].games.add(game.game_id);
     }
+    
+    const gameType = game.team_number !== null ? 'team' : 'individual';
+    acc[day][gameType].add(game.game_id);
+    
     return acc;
-  }, {} as Record<string, { date: string; games: Set<string>; players: Set<string> }>);
+  }, {} as Record<string, { date: string; team: Set<string>; individual: Set<string> }>);
 
   const dailyData = Object.entries(gamesByDay).map(([date, data]) => ({
     name: format(parseISO(date), "MMM d"),
-    games: data.games.size,
+    teamGames: data.team.size,
+    individualGames: data.individual.size,
   }));
 
   return (
@@ -67,7 +79,8 @@ export function GameAnalytics() {
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="games" fill="#8884d8" />
+              <Bar dataKey="teamGames" name="Team Games" fill="#8884d8" stackId="a" />
+              <Bar dataKey="individualGames" name="Individual Games" fill="#82ca9d" stackId="a" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -81,7 +94,8 @@ export function GameAnalytics() {
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="games" fill="#82ca9d" />
+              <Bar dataKey="teamGames" name="Team Games" fill="#8884d8" stackId="a" />
+              <Bar dataKey="individualGames" name="Individual Games" fill="#82ca9d" stackId="a" />
             </BarChart>
           </ResponsiveContainer>
         </div>

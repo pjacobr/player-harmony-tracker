@@ -1,5 +1,7 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
+import { Tooltip as UITooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { HelpCircle } from "lucide-react";
 
 interface TeamVsSoloChartProps {
   data: {
@@ -23,7 +25,22 @@ export const TeamVsSoloChart = ({ data }: TeamVsSoloChartProps) => {
 
   return (
     <div className="p-4 bg-gaming-card rounded-lg">
-      <h3 className="text-xl font-semibold mb-4">Team vs Solo Performance</h3>
+      <div className="flex items-center gap-2 mb-4">
+        <h3 className="text-xl font-semibold">Team vs Solo Performance</h3>
+        <TooltipProvider>
+          <UITooltip>
+            <TooltipTrigger>
+              <HelpCircle className="h-4 w-4 text-gaming-muted" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Compares KDA performance:<br />
+                - Solo: Games played alone<br />
+                - Team: Games played in teams<br />
+                Shows if players perform better solo or in teams.</p>
+            </TooltipContent>
+          </UITooltip>
+        </TooltipProvider>
+      </div>
       <div className="h-[300px]">
         <ChartContainer config={chartConfig}>
           <BarChart data={data} margin={{ top: 20, right: 20, bottom: 50, left: 20 }}>

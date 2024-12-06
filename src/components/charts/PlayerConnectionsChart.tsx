@@ -3,6 +3,8 @@ import { ResponsiveContainer, Tooltip } from "recharts";
 import { Player } from "@/types/player";
 import { ForceGraph2D } from "react-force-graph";
 import { calculateTeamPerformance } from "@/utils/playerStats";
+import { Tooltip as UITooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { HelpCircle } from "lucide-react";
 
 interface PlayerConnectionsChartProps {
   players: Player[];
@@ -43,7 +45,23 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
 
   return (
     <div className="bg-gaming-card rounded-lg p-4">
-      <h3 className="text-xl font-bold mb-4">Player Connections</h3>
+      <div className="flex items-center gap-2 mb-4">
+        <h3 className="text-xl font-bold">Player Connections</h3>
+        <TooltipProvider>
+          <UITooltip>
+            <TooltipTrigger>
+              <HelpCircle className="h-4 w-4 text-gaming-muted" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Network graph showing team relationships:<br />
+                - Lines: Games played together<br />
+                - Line thickness: Number of games<br />
+                - Line color: Win rate (Red: Low, Yellow: Medium, Green: High)<br />
+                Hover over connections to see detailed stats.</p>
+            </TooltipContent>
+          </UITooltip>
+        </TooltipProvider>
+      </div>
       <div className="h-[500px] w-full">
         <ForceGraph2D
           graphData={graphData}

@@ -43,7 +43,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
 
   const averageStats = calculatePlayerAverages(gameStats, players);
 
-  // Calculate player statistics
+  // Calculate player statistics with new KDA formula
   const playerStats = players.map(player => {
     const playerGames = gameStats.filter(game => game.player_id === player.id);
     const totalGames = playerGames.length;
@@ -56,14 +56,13 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
       name: player.name,
       totalGames,
       winRate: ((wins / totalGames) * 100).toFixed(1),
-      kda: ((kills + assists) / Math.max(deaths, 1)).toFixed(2),
+      kda: ((kills + (assists / 3)) / Math.max(deaths, 1)).toFixed(2),
       avgKills: (kills / totalGames).toFixed(1),
       avgDeaths: (deaths / totalGames).toFixed(1),
       avgAssists: (assists / totalGames).toFixed(1),
     };
   }).sort((a, b) => Number(b.kda) - Number(a.kda));
 
-  // Calculate box plot data
   const calculateBoxPlotData = () => {
     return players.map(player => {
       const playerGames = gameStats.filter(game => game.player_id === player.id);
@@ -81,7 +80,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
     });
   };
 
-  // Calculate team vs solo performance
+  // Calculate team vs solo performance with new KDA formula
   const calculateTeamVsSoloPerformance = () => {
     return players.map(player => {
       const playerGames = gameStats.filter(game => game.player_id === player.id);
@@ -94,7 +93,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
         const totalKills = games.reduce((sum, game) => sum + game.kills, 0);
         const totalDeaths = games.reduce((sum, game) => sum + game.deaths, 0);
         const totalAssists = games.reduce((sum, game) => sum + game.assists, 0);
-        return (totalKills + totalAssists) / Math.max(totalDeaths, 1);
+        return (totalKills + (totalAssists / 3)) / Math.max(totalDeaths, 1);
       };
 
       return {

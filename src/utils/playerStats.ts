@@ -6,14 +6,16 @@ export const calculatePlayerAverages = (gameStats: GameStats[], players: Array<{
   return players.map(player => {
     const playerGames = gameStats.filter(game => game.player_id === player.id);
     const totalGames = playerGames.length || 1;
+    const kills = playerGames.reduce((sum, game) => sum + game.kills, 0);
+    const deaths = playerGames.reduce((sum, game) => sum + game.deaths, 0);
+    const assists = playerGames.reduce((sum, game) => sum + game.assists, 0);
 
     return {
       name: player.name,
-      avgKills: Number((playerGames.reduce((sum, game) => sum + game.kills, 0) / totalGames).toFixed(2)),
-      avgDeaths: Number((playerGames.reduce((sum, game) => sum + game.deaths, 0) / totalGames).toFixed(2)),
-      avgAssists: Number((playerGames.reduce((sum, game) => sum + game.assists, 0) / totalGames).toFixed(2)),
-      kda: Number(((playerGames.reduce((sum, game) => sum + game.kills + game.assists, 0)) / 
-            Math.max(playerGames.reduce((sum, game) => sum + game.deaths, 0), 1)).toFixed(2))
+      avgKills: Number((kills / totalGames).toFixed(2)),
+      avgDeaths: Number((deaths / totalGames).toFixed(2)),
+      avgAssists: Number((assists / totalGames).toFixed(2)),
+      kda: Number(((kills + (assists / 3)) / Math.max(deaths, 1)).toFixed(2))
     };
   });
 };

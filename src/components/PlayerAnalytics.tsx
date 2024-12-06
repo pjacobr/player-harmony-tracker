@@ -7,6 +7,7 @@ import { BoxWhiskerChart } from "./charts/BoxWhiskerChart";
 import { TeamVsSoloChart } from "./charts/TeamVsSoloChart";
 import { PlayerConnectionsChart } from "./charts/PlayerConnectionsChart";
 import { calculatePlayerAverages } from "@/utils/playerStats";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface PlayerAnalyticsProps {
   players: Player[];
@@ -41,6 +42,26 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
   }
 
   const averageStats = calculatePlayerAverages(gameStats, players);
+
+  // Calculate player statistics
+  const playerStats = players.map(player => {
+    const playerGames = gameStats.filter(game => game.player_id === player.id);
+    const totalGames = playerGames.length;
+    const wins = playerGames.filter(game => game.won).length;
+    const kills = playerGames.reduce((sum, game) => sum + game.kills, 0);
+    const deaths = playerGames.reduce((sum, game) => sum + game.deaths, 0);
+    const assists = playerGames.reduce((sum, game) => sum + game.assists, 0);
+
+    return {
+      name: player.name,
+      totalGames,
+      winRate: ((wins / totalGames) * 100).toFixed(1),
+      kda: ((kills + assists) / Math.max(deaths, 1)).toFixed(2),
+      avgKills: (kills / totalGames).toFixed(1),
+      avgDeaths: (deaths / totalGames).toFixed(1),
+      avgAssists: (assists / totalGames).toFixed(1),
+    };
+  }).sort((a, b) => Number(b.kda) - Number(a.kda));
 
   // Calculate box plot data
   const calculateBoxPlotData = () => {
@@ -97,6 +118,38 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
         <TeamVsSoloChart data={teamVsSoloData} />
       </div>
       <PlayerConnectionsChart players={players} gameStats={gameStats} />
+      
+      <div>
+        <h3 className="text-xl font-semibold mb-4">Player Statistics Summary</h3>
+        <div className="bg-gaming-card rounded-lg p-4 overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Player</TableHead>
+                <TableHead className="text-right">Games</TableHead>
+                <TableHead className="text-right">Win Rate</TableHead>
+                <TableHead className="text-right">KDA</TableHead>
+                <TableHead className="text-right">Avg Kills</TableHead>
+                <TableHead className="text-right">Avg Deaths</TableHead>
+                <TableHead className="text-right">Avg Assists</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {playerStats.map((stats) => (
+                <TableRow key={stats.name}>
+                  <TableCell className="font-medium">{stats.name}</TableCell>
+                  <TableCell className="text-right">{stats.totalGames}</TableCell>
+                  <TableCell className="text-right">{stats.winRate}%</TableCell>
+                  <TableCell className="text-right">{stats.kda}</TableCell>
+                  <TableCell className="text-right">{stats.avgKills}</TableCell>
+                  <TableCell className="text-right">{stats.avgDeaths}</TableCell>
+                  <TableCell className="text-right">{stats.avgAssists}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
     </div>
   );
 };

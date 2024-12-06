@@ -22,16 +22,19 @@ export function GameAnalytics() {
 
   if (!games) return null;
 
-  // Calculate games per map
+  // Calculate unique games per map using Sets
   const gamesPerMap = games.reduce((acc, game) => {
     const mapName = game.map?.name || "Unknown Map";
-    acc[mapName] = (acc[mapName] || 0) + 1;
+    if (!acc[mapName]) {
+      acc[mapName] = new Set();
+    }
+    acc[mapName].add(game.game_id);
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, Set<string>>);
 
-  const mapData = Object.entries(gamesPerMap).map(([name, count]) => ({
+  const mapData = Object.entries(gamesPerMap).map(([name, gameIds]) => ({
     name,
-    games: count,
+    games: gameIds.size, // Count unique games
   }));
 
   // Calculate games and players per day

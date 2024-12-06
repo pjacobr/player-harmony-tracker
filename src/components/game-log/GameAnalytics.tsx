@@ -162,38 +162,6 @@ export function GameAnalytics() {
           </div>
         </div>
       </div>
-
-      <div>
-        <h3 className="text-xl font-semibold mb-4">Player Statistics</h3>
-        <div className="bg-gaming-card rounded-lg p-4 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Player</TableHead>
-                <TableHead className="text-right">Games</TableHead>
-                <TableHead className="text-right">Win Rate</TableHead>
-                <TableHead className="text-right">KDA</TableHead>
-                <TableHead className="text-right">Avg Kills</TableHead>
-                <TableHead className="text-right">Avg Deaths</TableHead>
-                <TableHead className="text-right">Avg Assists</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {playerStatsArray.map((stats) => (
-                <TableRow key={stats.name}>
-                  <TableCell className="font-medium">{stats.name}</TableCell>
-                  <TableCell className="text-right">{stats.totalGames}</TableCell>
-                  <TableCell className="text-right">{stats.winRate}%</TableCell>
-                  <TableCell className="text-right">{stats.kda}</TableCell>
-                  <TableCell className="text-right">{stats.avgKills}</TableCell>
-                  <TableCell className="text-right">{stats.avgDeaths}</TableCell>
-                  <TableCell className="text-right">{stats.avgAssists}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Accordion } from "@/components/ui/accordion";
 import { GameItem } from "./game-log/GameItem";
 import { GameScore } from "@/types/gameScore";
+import { GameAnalytics } from "./game-log/GameAnalytics";
 
 export function GameLog() {
   const { data: games, isLoading } = useQuery({
@@ -55,6 +56,7 @@ export function GameLog() {
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold mb-4">Game Logs</h2>
+      <GameAnalytics />
       <Accordion type="single" collapsible className="w-full">
         {games?.map((game) => (
           <GameItem key={game.id} game={game} />

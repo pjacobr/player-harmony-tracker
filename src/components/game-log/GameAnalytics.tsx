@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO, startOfDay } from "date-fns";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 export function GameAnalytics() {
   const { data: games } = useQuery({
@@ -63,11 +63,13 @@ export function GameAnalytics() {
     return acc;
   }, {} as Record<string, { date: string; team: Set<string>; individual: Set<string> }>);
 
-  const dailyData = Object.entries(gamesByDay).map(([date, data]) => ({
-    name: format(parseISO(date), "MMM d"),
-    teamGames: data.team.size,
-    individualGames: data.individual.size,
-  }));
+  const dailyData = Object.entries(gamesByDay)
+    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+    .map(([date, data]) => ({
+      name: format(parseISO(date), "MMM d"),
+      teamGames: data.team.size,
+      individualGames: data.individual.size,
+    }));
 
   return (
     <div className="mt-8">
@@ -80,8 +82,8 @@ export function GameAnalytics() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="teamGames" name="Team Games" fill="#8884d8" stackId="a" />
-                <Bar dataKey="individualGames" name="Individual Games" fill="#82ca9d" stackId="a" />
+                <Bar dataKey="teamGames" name="Team Games" fill="#8884d8" />
+                <Bar dataKey="individualGames" name="Individual Games" fill="#82ca9d" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -91,13 +93,25 @@ export function GameAnalytics() {
           <h3 className="text-xl font-semibold mb-4">Games per Day</h3>
           <div className="h-64 bg-gaming-card rounded-lg p-4">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dailyData}>
+              <LineChart data={dailyData}>
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="teamGames" name="Team Games" fill="#8884d8" stackId="a" />
-                <Bar dataKey="individualGames" name="Individual Games" fill="#82ca9d" stackId="a" />
-              </BarChart>
+                <Line 
+                  type="monotone"
+                  dataKey="teamGames" 
+                  name="Team Games" 
+                  stroke="#8884d8"
+                  strokeWidth={2}
+                />
+                <Line 
+                  type="monotone"
+                  dataKey="individualGames" 
+                  name="Individual Games" 
+                  stroke="#82ca9d"
+                  strokeWidth={2}
+                />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>

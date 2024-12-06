@@ -70,34 +70,36 @@ export function GameAnalytics() {
   }));
 
   return (
-    <div className="space-y-8 mt-8">
-      <div>
-        <h3 className="text-xl font-semibold mb-4">Games per Map</h3>
-        <div className="h-64 bg-gaming-card rounded-lg p-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={mapData}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="teamGames" name="Team Games" fill="#8884d8" stackId="a" />
-              <Bar dataKey="individualGames" name="Individual Games" fill="#82ca9d" stackId="a" />
-            </BarChart>
-          </ResponsiveContainer>
+    <div className="mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h3 className="text-xl font-semibold mb-4">Games per Map</h3>
+          <div className="h-64 bg-gaming-card rounded-lg p-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={mapData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="teamGames" name="Team Games" fill="#8884d8" stackId="a" />
+                <Bar dataKey="individualGames" name="Individual Games" fill="#82ca9d" stackId="a" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      </div>
 
-      <div>
-        <h3 className="text-xl font-semibold mb-4">Games per Day</h3>
-        <div className="h-64 bg-gaming-card rounded-lg p-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dailyData}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="teamGames" name="Team Games" fill="#8884d8" stackId="a" />
-              <Bar dataKey="individualGames" name="Individual Games" fill="#82ca9d" stackId="a" />
-            </BarChart>
-          </ResponsiveContainer>
+        <div>
+          <h3 className="text-xl font-semibold mb-4">Games per Day</h3>
+          <div className="h-64 bg-gaming-card rounded-lg p-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dailyData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="teamGames" name="Team Games" fill="#8884d8" stackId="a" />
+                <Bar dataKey="individualGames" name="Individual Games" fill="#82ca9d" stackId="a" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>

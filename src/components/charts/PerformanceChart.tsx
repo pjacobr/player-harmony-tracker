@@ -1,8 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, Legend } from "recharts";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import { HelpCircle } from "lucide-react";
+import { StatTooltip } from "../analytics/StatTooltip";
+import { getTooltipDescriptions } from "@/utils/kdaCalculations";
 
 interface PerformanceChartProps {
   data: Array<{
@@ -14,23 +14,13 @@ interface PerformanceChartProps {
 }
 
 export const PerformanceChart = ({ data }: PerformanceChartProps) => {
+  const tooltips = getTooltipDescriptions();
+
   return (
     <Card className="p-4 bg-gaming-card">
       <div className="flex items-center gap-2 mb-4">
         <h3 className="text-xl font-bold text-gaming-accent">Average Performance Metrics</h3>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <HelpCircle className="h-4 w-4 text-gaming-muted" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Average metrics per game:<br />
-                - Kills: Direct eliminations<br />
-                - Deaths: Times eliminated<br />
-                - Assists: Helped in eliminations</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <StatTooltip {...tooltips.performance} />
       </div>
       <div className="h-[300px]">
         <ChartContainer config={{}}>

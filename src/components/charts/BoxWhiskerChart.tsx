@@ -15,8 +15,8 @@ import { transformBoxWhiskerData } from "./utils/dataTransforms";
 import { MedianLine } from "./shapes/MedianLine";
 import { WhiskerLine } from "./shapes/WhiskerLine";
 import { BoxWhiskerTooltip } from "./tooltips/BoxWhiskerTooltip";
-import { Tooltip as UITooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import { HelpCircle } from "lucide-react";
+import { StatTooltip } from "../analytics/StatTooltip";
+import { getTooltipDescriptions } from "@/utils/kdaCalculations";
 
 interface BoxWhiskerChartProps {
   data: BoxWhiskerData[];
@@ -24,25 +24,13 @@ interface BoxWhiskerChartProps {
 
 export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
   const transformedData = useMemo(() => transformBoxWhiskerData(data), [data]);
+  const tooltips = getTooltipDescriptions();
 
   return (
     <Card className="p-4 bg-gaming-card">
       <div className="flex items-center gap-2 mb-4">
         <h3 className="text-xl font-bold text-gaming-accent">Performance Distribution</h3>
-        <TooltipProvider>
-          <UITooltip>
-            <TooltipTrigger>
-              <HelpCircle className="h-4 w-4 text-gaming-muted" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Box and Whisker plot shows kill distribution:<br />
-                - Box: Middle 50% of kills<br />
-                - Line in box: Median kills<br />
-                - Whiskers: Min/Max kills<br />
-                Wider boxes indicate more variable performance.</p>
-            </TooltipContent>
-          </UITooltip>
-        </TooltipProvider>
+        <StatTooltip {...tooltips.distribution} />
       </div>
       <div className="h-[300px]">
         <ChartContainer config={{}}>

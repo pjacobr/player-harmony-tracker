@@ -8,6 +8,7 @@ import { TeamVsSoloChart } from "./charts/TeamVsSoloChart";
 import { PlayerConnectionsChart } from "./charts/PlayerConnectionsChart";
 import { calculatePlayerAverages } from "@/utils/playerStats";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { calculateKDA, calculateWinRate } from "@/utils/kdaCalculations";
 
 interface PlayerAnalyticsProps {
   players: Player[];
@@ -43,7 +44,6 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
 
   const averageStats = calculatePlayerAverages(gameStats, players);
 
-  // Calculate player statistics with new KDA formula
   const playerStats = players.map(player => {
     const playerGames = gameStats.filter(game => game.player_id === player.id);
     const totalGames = playerGames.length;
@@ -55,8 +55,8 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
     return {
       name: player.name,
       totalGames,
-      winRate: ((wins / totalGames) * 100).toFixed(1),
-      kda: ((kills + (assists / 3)) / Math.max(deaths, 1)).toFixed(2),
+      winRate: calculateWinRate(wins, totalGames).toFixed(1),
+      kda: calculateKDA(kills, deaths, assists).toFixed(2),
       avgKills: (kills / totalGames).toFixed(1),
       avgDeaths: (deaths / totalGames).toFixed(1),
       avgAssists: (assists / totalGames).toFixed(1),

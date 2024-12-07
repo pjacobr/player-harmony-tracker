@@ -12,6 +12,7 @@ export function GameLog() {
       const { data, error } = await supabase
         .from("game_scores")
         .select(`
+          id,
           game_id,
           player_id,
           kills,

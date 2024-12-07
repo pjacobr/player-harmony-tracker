@@ -33,14 +33,26 @@ export function GameScoreCard({ score }: GameScoreProps) {
 
   const updateScoreMutation = useMutation({
     mutationFn: async (updatedScore: typeof editedScore) => {
-      const { error } = await supabase
+      // Log the data being sent
+      console.log('Updating score:', {
+        id: score.id,
+        updatedScore
+      });
+
+      const { data, error } = await supabase
         .from("game_scores")
         .update(updatedScore)
-        .eq("id", score.id);
+        .eq("id", score.id)
+        .select(); // Add select() to get the updated data
 
       if (error) throw error;
+      
+      // Log the response
+      console.log('Update response:', data);
+      
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["game-logs"] });
       setIsEditing(false);
       toast({
@@ -48,7 +60,8 @@ export function GameScoreCard({ score }: GameScoreProps) {
         description: "The game score has been successfully updated.",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
+      console.error('Update error:', error);
       toast({
         title: "Error",
         description: "Failed to update score: " + error.message,
@@ -58,7 +71,23 @@ export function GameScoreCard({ score }: GameScoreProps) {
   });
 
   const handleSave = () => {
-    updateScoreMutation.mutate(editedScore);
+    // Validate the scores before updating
+    const validatedScore = {
+      kills: Math.max(0, editedScore.kills),
+      deaths: Math.max(0, editedScore.deaths),
+      assists: Math.max(0, editedScore.assists),
+    };
+
+    // Only update if values have actually changed
+    if (
+      validatedScore.kills !== score.kills ||
+      validatedScore.deaths !== score.deaths ||
+      validatedScore.assists !== score.assists
+    ) {
+      updateScoreMutation.mutate(validatedScore);
+    } else {
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {
@@ -68,6 +97,17 @@ export function GameScoreCard({ score }: GameScoreProps) {
       assists: score.assists,
     });
     setIsEditing(false);
+  };
+
+  const handleInputChange = (
+    field: 'kills' | 'deaths' | 'assists',
+    value: string
+  ) => {
+    const numValue = parseInt(value) || 0;
+    setEditedScore(prev => ({
+      ...prev,
+      [field]: Math.max(0, numValue) // Ensure non-negative values
+    }));
   };
 
   return (
@@ -89,13 +129,9 @@ export function GameScoreCard({ score }: GameScoreProps) {
             {isEditing ? (
               <Input
                 type="number"
+                min="0"
                 value={editedScore.kills}
-                onChange={(e) =>
-                  setEditedScore({
-                    ...editedScore,
-                    kills: parseInt(e.target.value) || 0,
-                  })
-                }
+                onChange={(e) => handleInputChange('kills', e.target.value)}
                 className="w-16 h-8 text-center"
               />
             ) : (
@@ -107,13 +143,9 @@ export function GameScoreCard({ score }: GameScoreProps) {
             {isEditing ? (
               <Input
                 type="number"
+                min="0"
                 value={editedScore.deaths}
-                onChange={(e) =>
-                  setEditedScore({
-                    ...editedScore,
-                    deaths: parseInt(e.target.value) || 0,
-                  })
-                }
+                onChange={(e) => handleInputChange('deaths', e.target.value)}
                 className="w-16 h-8 text-center"
               />
             ) : (
@@ -125,13 +157,9 @@ export function GameScoreCard({ score }: GameScoreProps) {
             {isEditing ? (
               <Input
                 type="number"
+                min="0"
                 value={editedScore.assists}
-                onChange={(e) =>
-                  setEditedScore({
-                    ...editedScore,
-                    assists: parseInt(e.target.value) || 0,
-                  })
-                }
+                onChange={(e) => handleInputChange('assists', e.target.value)}
                 className="w-16 h-8 text-center"
               />
             ) : (
@@ -146,6 +174,7 @@ export function GameScoreCard({ score }: GameScoreProps) {
                 variant="ghost"
                 size="icon"
                 onClick={handleSave}
+                disabled={updateScoreMutation.isPending}
                 className="h-8 w-8"
               >
                 <Save className="h-4 w-4" />
@@ -154,6 +183,7 @@ export function GameScoreCard({ score }: GameScoreProps) {
                 variant="ghost"
                 size="icon"
                 onClick={handleCancel}
+                disabled={updateScoreMutation.isPending}
                 className="h-8 w-8"
               >
                 <X className="h-4 w-4" />

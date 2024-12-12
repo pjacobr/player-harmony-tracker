@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-import { ResponsiveContainer, Tooltip } from "recharts";
 import { Player } from "@/types/player";
 import { ForceGraph2D } from "react-force-graph";
 import { calculateTeamPerformance } from "@/utils/playerStats";
 import { Tooltip as UITooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { HelpCircle } from "lucide-react";
+import { useWindowSize } from "@/hooks/use-window-size";
 
 interface PlayerConnectionsChartProps {
   players: Player[];
@@ -12,6 +12,10 @@ interface PlayerConnectionsChartProps {
 }
 
 export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnectionsChartProps) => {
+  const { width } = useWindowSize();
+  const graphWidth = Math.min(width - 32, 800); // 32px for padding
+  const graphHeight = Math.min(500, graphWidth * 0.75); // Maintain aspect ratio
+
   const graphData = useMemo(() => {
     const nodes = players.map(player => ({
       id: player.id,
@@ -44,7 +48,7 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
   }, [players, gameStats]);
 
   return (
-    <div className="bg-gaming-card rounded-lg p-4">
+    <div className="bg-gaming-card rounded-lg p-4 overflow-hidden">
       <div className="flex items-center gap-2 mb-4">
         <h3 className="text-xl font-bold">Player Connections</h3>
         <TooltipProvider>
@@ -62,7 +66,7 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
           </UITooltip>
         </TooltipProvider>
       </div>
-      <div className="h-[500px] w-full">
+      <div className="w-full" style={{ height: graphHeight }}>
         <ForceGraph2D
           graphData={graphData}
           nodeLabel="name"
@@ -81,8 +85,8 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
             return `Games: ${l.gamesPlayed} | Win Rate: ${(l.value * 100).toFixed(1)}% | Avg KDA: ${l.avgKDA.toFixed(2)}`;
           }}
           backgroundColor="#1F2937" // gaming.card
-          width={800}
-          height={500}
+          width={graphWidth}
+          height={graphHeight}
           d3VelocityDecay={0.3}
           d3AlphaDecay={0.02}
           cooldownTicks={100}

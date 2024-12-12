@@ -10,13 +10,15 @@ import { ScreenshotUpload } from "@/components/ScreenshotUpload";
 import { PlayerAnalytics } from "@/components/PlayerAnalytics";
 import { GameLog } from "@/components/GameLog";
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent } from "@/components/ui/tabs";
 import ParticleBackground from "@/components/ParticleBackground";
+import { TabNavigation } from "@/components/navigation/TabNavigation";
 
 const Index = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [shuffleKey, setShuffleKey] = useState(0);
+  const [activeTab, setActiveTab] = useState("players");
 
   const { data: players = [], isLoading } = useQuery({
     queryKey: ['players'],
@@ -55,7 +57,6 @@ const Index = () => {
     }
   });
 
-  // Add player mutation
   const addPlayerMutation = useMutation({
     mutationFn: async (name: string) => {
       const { data, error } = await supabase
@@ -76,7 +77,6 @@ const Index = () => {
     }
   });
 
-  // Delete player mutation
   const deletePlayerMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -120,22 +120,16 @@ const Index = () => {
   return (
     <>
       <ParticleBackground />
-      <div className="min-h-screen bg-gaming-background/80 text-white p-4">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <h1 className="text-3xl font-bold text-center mb-8">
+      <div className="min-h-screen bg-gaming-background/80 text-white p-2 sm:p-4">
+        <div className="max-w-6xl mx-auto space-y-4 sm:space-y-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-8">
             Player Handicap Tracker
           </h1>
 
-          <Tabs defaultValue="players" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 bg-gaming-card">
-              <TabsTrigger value="players">Players</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="teams">Teams</TabsTrigger>
-              <TabsTrigger value="screenshots">Screenshots</TabsTrigger>
-              <TabsTrigger value="game-logs">Game Logs</TabsTrigger>
-            </TabsList>
+          <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-            <TabsContent value="players" className="mt-6">
+          <div className="mt-4">
+            <TabsContent value="players" className="mt-0">
               <AddPlayerForm onAddPlayer={(name) => addPlayerMutation.mutate(name)} />
               <PlayerList
                 players={players}
@@ -147,7 +141,7 @@ const Index = () => {
               />
             </TabsContent>
 
-            <TabsContent value="analytics" className="mt-6">
+            <TabsContent value="analytics" className="mt-0">
               {selectedPlayers.length > 0 ? (
                 <PlayerAnalytics players={selectedPlayers} />
               ) : (
@@ -157,7 +151,7 @@ const Index = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="teams" className="mt-6">
+            <TabsContent value="teams" className="mt-0">
               {selectedPlayers.length > 0 ? (
                 <TeamDisplay
                   teamA={teamA}
@@ -171,7 +165,7 @@ const Index = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="screenshots" className="mt-6">
+            <TabsContent value="screenshots" className="mt-0">
               {selectedPlayers.length > 0 ? (
                 <ScreenshotUpload
                   onScoresDetected={(scores) => {
@@ -187,10 +181,10 @@ const Index = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="game-logs" className="mt-6">
+            <TabsContent value="game-logs" className="mt-0">
               <GameLog />
             </TabsContent>
-          </Tabs>
+          </div>
         </div>
       </div>
     </>

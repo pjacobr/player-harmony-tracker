@@ -17,9 +17,9 @@ export const PerformanceChart = ({ data }: PerformanceChartProps) => {
   const tooltips = getTooltipDescriptions();
 
   return (
-    <Card className="p-4 bg-gaming-card">
+    <Card className="p-4">
       <div className="flex items-center gap-2 mb-4">
-        <h3 className="text-xl font-bold text-gaming-accent">Average Performance Metrics</h3>
+        <h3 className="text-xl font-bold">Average Performance Metrics</h3>
         <StatTooltip {...tooltips.performance} />
       </div>
       <div className="h-[300px]">
@@ -31,14 +31,13 @@ export const PerformanceChart = ({ data }: PerformanceChartProps) => {
               textAnchor="end" 
               height={70} 
               interval={0}
-              stroke="#9F9EA1"
             />
-            <YAxis stroke="#9F9EA1" />
+            <YAxis />
             <ChartTooltip />
             <Legend />
-            <Bar dataKey="avgKills" fill="#9b87f5" name="Avg Kills" />
-            <Bar dataKey="avgDeaths" fill="#7E69AB" name="Avg Deaths" />
-            <Bar dataKey="avgAssists" fill="#D6BCFA" name="Avg Assists" />
+            <Bar dataKey="avgKills" className="fill-primary" name="Avg Kills" />
+            <Bar dataKey="avgDeaths" className="fill-secondary" name="Avg Deaths" />
+            <Bar dataKey="avgAssists" className="fill-accent" name="Avg Assists" />
           </BarChart>
         </ChartContainer>
       </div>

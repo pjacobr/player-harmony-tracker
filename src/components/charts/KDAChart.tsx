@@ -18,9 +18,9 @@ export const KDAChart = ({ data, sortOption }: KDAChartProps) => {
   const tooltips = getTooltipDescriptions();
   
   return (
-    <Card className="p-4 bg-gaming-card">
+    <Card className="p-4">
       <div className="flex items-center gap-2 mb-4">
-        <h3 className="text-xl font-bold text-gaming-accent">Average K/D Spread</h3>
+        <h3 className="text-xl font-bold">Average K/D Spread</h3>
         <StatTooltip 
           title="K/D Spread"
           formula="Average Kills - Average Deaths"
@@ -36,18 +36,16 @@ export const KDAChart = ({ data, sortOption }: KDAChartProps) => {
               textAnchor="end" 
               height={70} 
               interval={0}
-              stroke="#9F9EA1"
             />
-            <YAxis stroke="#9F9EA1" />
+            <YAxis />
             <ChartTooltip />
             <Legend />
             <Bar 
               dataKey="kdSpread" 
               name="K/D Spread"
-              fill="#9b87f5"
               className={cn(
-                "[&_.recharts-rectangle]:fill-emerald-500 dark:[&_.recharts-rectangle]:fill-emerald-400",
-                "[&_.recharts-rectangle[height^='-']]:fill-red-500 dark:[&_.recharts-rectangle[height^='-']]:fill-red-400"
+                "[&_.recharts-rectangle]:fill-primary dark:[&_.recharts-rectangle]:fill-primary",
+                "[&_.recharts-rectangle[height^='-']]:fill-destructive dark:[&_.recharts-rectangle[height^='-']]:fill-destructive"
               )}
             />
           </BarChart>

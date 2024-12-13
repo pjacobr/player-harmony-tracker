@@ -15,6 +15,9 @@ interface KDAChartProps {
 export const KDAChart = ({ data }: KDAChartProps) => {
   const tooltips = getTooltipDescriptions();
   
+  // Sort data from highest to lowest KD spread
+  const sortedData = [...data].sort((a, b) => b.kdSpread - a.kdSpread);
+  
   return (
     <Card className="p-4 bg-gaming-card">
       <div className="flex items-center gap-2 mb-4">
@@ -27,7 +30,7 @@ export const KDAChart = ({ data }: KDAChartProps) => {
       </div>
       <div className="h-[300px]">
         <ChartContainer config={{}}>
-          <BarChart data={data}>
+          <BarChart data={sortedData}>
             <XAxis 
               dataKey="name" 
               angle={-45} 

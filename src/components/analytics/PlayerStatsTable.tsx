@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { sortByName } from "@/utils/sortingUtils";
+import { SortOption } from "@/utils/sortingUtils";
 
 interface PlayerStatsTableProps {
   playerStats: Array<{
@@ -12,12 +12,10 @@ interface PlayerStatsTableProps {
     avgAssists: string;
     kdSpread: string;
   }>;
-  sortAscending: boolean;
+  sortOption: SortOption;
 }
 
-export const PlayerStatsTable = ({ playerStats, sortAscending }: PlayerStatsTableProps) => {
-  const sortedStats = [...playerStats].sort((a, b) => sortByName(a, b, sortAscending));
-
+export const PlayerStatsTable = ({ playerStats, sortOption }: PlayerStatsTableProps) => {
   return (
     <div>
       <h3 className="text-xl font-semibold mb-4">Player Statistics Summary</h3>
@@ -36,7 +34,7 @@ export const PlayerStatsTable = ({ playerStats, sortAscending }: PlayerStatsTabl
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedStats.map((stats) => (
+            {playerStats.map((stats) => (
               <TableRow key={stats.name}>
                 <TableCell className="font-medium">{stats.name}</TableCell>
                 <TableCell className="text-right">{stats.totalGames}</TableCell>

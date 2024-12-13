@@ -24,13 +24,6 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        gaming: {
-          accent: "#6D28D9",
-          highlight: "#4F46E5",
-          muted: "#4B5563",
-          card: "#1F2937",
-          background: "#111827",
-        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -58,6 +51,18 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        gaming: {
+          primary: "#9b87f5",
+          secondary: "#7E69AB",
+          accent: "#F97316",
+          background: "#F1F0FB",
+          text: "#222222",
+          "dark-primary": "#6E59A5",
+          "dark-secondary": "#1A1F2C",
+          "dark-accent": "#0EA5E9",
+          "dark-background": "#222222",
+          "dark-text": "#F1F0FB",
         },
       },
       borderRadius: {

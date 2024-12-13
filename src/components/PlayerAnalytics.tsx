@@ -26,7 +26,11 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
       const playerIds = players.map(p => p.id);
       const { data, error } = await supabase
         .from('game_scores')
-        .select('*')
+        .select(`
+          *,
+          map:maps!game_scores_map_id_fkey(name),
+          player:players!fk_player(name)
+        `)
         .in('player_id', playerIds)
         .order('created_at', { ascending: true });
       
@@ -161,7 +165,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
         </Select>
       </div>
 
-      <PlayerStatsCards players={players} gameStats={gameStats} />
+      <PlayerStatsCards players={players} gameStats={gameStats || []} />
       
       <div className="grid md:grid-cols-2 gap-4">
         <KDAChart data={sortedAverageStats} sortOption={sortOption} />
@@ -169,7 +173,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
         <BoxWhiskerChart data={sortedBoxPlotData} />
         <TeamVsSoloChart data={sortedTeamVsSoloData} sortOption={sortOption} />
       </div>
-      <PlayerConnectionsChart players={players} gameStats={gameStats} />
+      <PlayerConnectionsChart players={players} gameStats={gameStats || []} />
       <PlayerStatsTable playerStats={sortedPlayerStats} sortOption={sortOption} />
     </div>
   );

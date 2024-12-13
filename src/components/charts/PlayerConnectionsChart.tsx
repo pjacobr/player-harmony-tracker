@@ -1,9 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Player } from "@/types/player";
 import { ForceGraph2D } from "react-force-graph";
 import { calculateTeamPerformance } from "@/utils/playerStats";
-import { Tooltip as UITooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import { HelpCircle } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { ZoomIn, ZoomOut, Minimize2 } from "lucide-react";
 import { useWindowSize } from "@/hooks/use-window-size";
 
 interface PlayerConnectionsChartProps {
@@ -11,10 +14,23 @@ interface PlayerConnectionsChartProps {
   gameStats: any[];
 }
 
+type FilterMetric = 'winRate' | 'gamesPlayed' | 'avgKDA';
+
 export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnectionsChartProps) => {
   const { width } = useWindowSize();
-  const graphWidth = Math.min(width - 32, 800); // 32px for padding
-  const graphHeight = Math.min(500, graphWidth * 0.75); // Maintain aspect ratio
+  const graphWidth = Math.min(width - 32, 800);
+  const graphHeight = Math.min(500, graphWidth * 0.75);
+  
+  const [selectedMetric, setSelectedMetric] = useState<FilterMetric>('winRate');
+  const [minValue, setMinValue] = useState(0);
+  const [graphZoom, setGraphZoom] = useState(1);
+  const [graphInstance, setGraphInstance] = useState<any>(null);
+
+  const metricRanges = {
+    winRate: { min: 0, max: 1, step: 0.1, format: (v: number) => `${(v * 100).toFixed(0)}%` },
+    gamesPlayed: { min: 0, max: 50, step: 1, format: (v: number) => v.toString() },
+    avgKDA: { min: 0, max: 10, step: 0.5, format: (v: number) => v.toFixed(1) }
+  };
 
   const graphData = useMemo(() => {
     const nodes = players.map(player => ({
@@ -23,7 +39,6 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
     }));
 
     const links = [];
-    // Create connections between all players
     for (let i = 0; i < players.length; i++) {
       for (let j = i + 1; j < players.length; j++) {
         const performance = calculateTeamPerformance(
@@ -33,65 +48,131 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
         );
         
         if (performance.gamesPlayed > 0) {
-          links.push({
-            source: players[i].id,
-            target: players[j].id,
-            value: performance.winRate,
+          const metrics = {
+            winRate: performance.winRate,
             gamesPlayed: performance.gamesPlayed,
             avgKDA: performance.avgKDA
-          });
+          };
+
+          if (metrics[selectedMetric] >= minValue) {
+            links.push({
+              source: players[i].id,
+              target: players[j].id,
+              ...metrics
+            });
+          }
         }
       }
     }
 
     return { nodes, links };
-  }, [players, gameStats]);
+  }, [players, gameStats, selectedMetric, minValue]);
+
+  const handleZoom = (zoomIn: boolean) => {
+    if (graphInstance) {
+      const newZoom = zoomIn ? graphZoom * 1.2 : graphZoom * 0.8;
+      setGraphZoom(newZoom);
+      graphInstance.zoom(newZoom);
+    }
+  };
+
+  const resetZoom = () => {
+    if (graphInstance) {
+      setGraphZoom(1);
+      graphInstance.zoom(1);
+      graphInstance.centerAt(0, 0);
+    }
+  };
+
+  const getNodeColor = (node: any) => {
+    const links = graphData.links.filter(
+      (link: any) => link.source.id === node.id || link.target.id === node.id
+    );
+    return links.length > 0 ? "hsl(var(--primary))" : "hsl(var(--muted))";
+  };
+
+  const getLinkColor = (link: any) => {
+    const value = link[selectedMetric];
+    const { min, max } = metricRanges[selectedMetric];
+    const normalizedValue = (value - min) / (max - min);
+    
+    if (normalizedValue >= 0.7) return "hsl(var(--success))";
+    if (normalizedValue >= 0.4) return "hsl(var(--warning))";
+    return "hsl(var(--destructive))";
+  };
 
   return (
-    <div className="bg-gaming-card rounded-lg p-4 overflow-hidden">
-      <div className="flex items-center gap-2 mb-4">
-        <h3 className="text-xl font-bold">Player Connections</h3>
-        <TooltipProvider>
-          <UITooltip>
-            <TooltipTrigger>
-              <HelpCircle className="h-4 w-4 text-gaming-muted" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Network graph showing team relationships:<br />
-                - Lines: Games played together<br />
-                - Line thickness: Number of games<br />
-                - Line color: Win rate (Red: Low, Yellow: Medium, Green: High)<br />
-                Hover over connections to see detailed stats.</p>
-            </TooltipContent>
-          </UITooltip>
-        </TooltipProvider>
+    <Card className="p-4">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-bold">Player Connections</h3>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" onClick={() => handleZoom(true)}>
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={() => handleZoom(false)}>
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={resetZoom}>
+              <Minimize2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="w-full sm:w-48">
+            <Select value={selectedMetric} onValueChange={(value: FilterMetric) => setSelectedMetric(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select metric" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="winRate">Win Rate</SelectItem>
+                <SelectItem value="gamesPlayed">Games Played</SelectItem>
+                <SelectItem value="avgKDA">Average KDA</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex-1 flex items-center gap-4">
+            <span className="text-sm">Min: {metricRanges[selectedMetric].format(minValue)}</span>
+            <Slider
+              value={[minValue]}
+              min={metricRanges[selectedMetric].min}
+              max={metricRanges[selectedMetric].max}
+              step={metricRanges[selectedMetric].step}
+              onValueChange={([value]) => setMinValue(value)}
+              className="flex-1"
+            />
+          </div>
+        </div>
+
+        <div className="relative" style={{ height: graphHeight }}>
+          <ForceGraph2D
+            ref={setGraphInstance}
+            graphData={graphData}
+            nodeLabel="name"
+            nodeColor={getNodeColor}
+            linkColor={getLinkColor}
+            linkWidth={(link: any) => (link.gamesPlayed as number) / 2}
+            nodeRelSize={8}
+            linkLabel={(link: any) => {
+              const l = link as any;
+              return `Games: ${l.gamesPlayed} | Win Rate: ${(l.winRate * 100).toFixed(1)}% | Avg KDA: ${l.avgKDA.toFixed(2)}`;
+            }}
+            backgroundColor="transparent"
+            width={graphWidth}
+            height={graphHeight}
+            d3VelocityDecay={0.3}
+            d3AlphaDecay={0.02}
+            cooldownTicks={100}
+            onEngineStop={() => {
+              if (graphInstance && graphZoom !== 1) {
+                graphInstance.zoom(graphZoom);
+              }
+            }}
+          />
+        </div>
       </div>
-      <div className="w-full" style={{ height: graphHeight }}>
-        <ForceGraph2D
-          graphData={graphData}
-          nodeLabel="name"
-          nodeColor={() => "#6D28D9"} // gaming.accent
-          linkColor={(link: any) => {
-            const value = link.value as number;
-            // Color scale based on win rate
-            if (value >= 0.7) return "#22C55E"; // High performance - green
-            if (value >= 0.5) return "#EAB308"; // Medium performance - yellow
-            return "#EF4444"; // Low performance - red
-          }}
-          linkWidth={(link: any) => (link.gamesPlayed as number) / 2}
-          nodeRelSize={8}
-          linkLabel={(link: any) => {
-            const l = link as { gamesPlayed: number; value: number; avgKDA: number };
-            return `Games: ${l.gamesPlayed} | Win Rate: ${(l.value * 100).toFixed(1)}% | Avg KDA: ${l.avgKDA.toFixed(2)}`;
-          }}
-          backgroundColor="#1F2937" // gaming.card
-          width={graphWidth}
-          height={graphHeight}
-          d3VelocityDecay={0.3}
-          d3AlphaDecay={0.02}
-          cooldownTicks={100}
-        />
-      </div>
-    </div>
+    </Card>
   );
 };

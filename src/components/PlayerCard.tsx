@@ -14,14 +14,14 @@ export const PlayerCard = ({ player, onUpdate, onDelete, onToggleSelect }: Playe
   const [isEditing, setIsEditing] = useState(false);
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-gaming-card/50 hover:bg-gaming-card transition-colors rounded gap-3">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-card hover:bg-accent/5 transition-colors rounded gap-3">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
-        <span className="font-semibold text-lg sm:w-40 break-words">{player.name}</span>
-        <div className="flex flex-wrap gap-3 text-sm text-gaming-muted">
+        <span className="font-semibold text-lg sm:w-40 break-words text-foreground">{player.name}</span>
+        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
           <span>Kills: {player.kills}</span>
           <span>Deaths: {player.deaths}</span>
           <span>Assists: {player.assists}</span>
-          <span className="text-gaming-accent font-bold">Handicap: {player.handicap}</span>
+          <span className="text-accent font-bold">Handicap: {player.handicap}</span>
         </div>
       </div>
       <div className="flex gap-2 w-full sm:w-auto">

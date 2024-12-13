@@ -117,7 +117,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gaming-background/80 text-white p-2 sm:p-4">
+    <div className="min-h-screen bg-background text-foreground p-2 sm:p-4">
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-8">
           Player Handicap Tracker

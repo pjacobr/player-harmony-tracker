@@ -16,7 +16,7 @@ export const TeamDisplay = ({ teamA, teamB, onShuffle }: TeamDisplayProps) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Balanced Teams</h2>
+        <h2 className="text-2xl font-bold text-foreground">Balanced Teams</h2>
         {onShuffle && (
           <Button
             variant="outline"
@@ -30,24 +30,24 @@ export const TeamDisplay = ({ teamA, teamB, onShuffle }: TeamDisplayProps) => {
         )}
       </div>
       <div className="grid md:grid-cols-2 gap-4">
-        <Card className="p-4 bg-gaming-card">
-          <h3 className="text-xl font-bold mb-2 text-gaming-accent">Team A ({getTeamScore(teamA)})</h3>
+        <Card className="p-4 bg-card">
+          <h3 className="text-xl font-bold mb-2 text-accent">Team A ({getTeamScore(teamA)})</h3>
           <div className="space-y-2">
             {teamA.map(player => (
               <div key={player.id} className="flex justify-between items-center">
-                <span>{player.name}</span>
-                <span className="text-gaming-muted">H: {player.handicap}</span>
+                <span className="text-foreground">{player.name}</span>
+                <span className="text-muted-foreground">H: {player.handicap}</span>
               </div>
             ))}
           </div>
         </Card>
-        <Card className="p-4 bg-gaming-card">
-          <h3 className="text-xl font-bold mb-2 text-gaming-accent">Team B ({getTeamScore(teamB)})</h3>
+        <Card className="p-4 bg-card">
+          <h3 className="text-xl font-bold mb-2 text-accent">Team B ({getTeamScore(teamB)})</h3>
           <div className="space-y-2">
             {teamB.map(player => (
               <div key={player.id} className="flex justify-between items-center">
-                <span>{player.name}</span>
-                <span className="text-gaming-muted">H: {player.handicap}</span>
+                <span className="text-foreground">{player.name}</span>
+                <span className="text-muted-foreground">H: {player.handicap}</span>
               </div>
             ))}
           </div>

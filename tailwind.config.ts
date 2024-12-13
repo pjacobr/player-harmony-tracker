@@ -52,18 +52,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        gaming: {
-          primary: "#9b87f5",
-          secondary: "#7E69AB",
-          accent: "#F97316",
-          background: "#FFFFFF",
-          text: "#222222",
-          "dark-primary": "#6E59A5",
-          "dark-secondary": "#1A1F2C",
-          "dark-accent": "#0EA5E9",
-          "dark-background": "#000000",
-          "dark-text": "#FFFFFF",
-        },
       },
       borderRadius: {
         lg: "var(--radius)",

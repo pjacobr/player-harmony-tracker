@@ -63,5 +63,5 @@
 }
 
 .card-gradient {
-  @apply bg-gradient-to-br from-gaming-primary/20 to-gaming-secondary/20 backdrop-blur-sm dark:from-gaming-dark-primary/20 dark:to-gaming-dark-secondary/20;
+  @apply bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm;
 }

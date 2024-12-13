@@ -3,6 +3,7 @@ import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, Legend } from "recharts";
 import { StatTooltip } from "../analytics/StatTooltip";
 import { getTooltipDescriptions } from "@/utils/kdaCalculations";
+import { cn } from "@/lib/utils";
 
 interface KDAChartProps {
   data: Array<{
@@ -33,15 +34,19 @@ export const KDAChart = ({ data }: KDAChartProps) => {
               textAnchor="end" 
               height={70} 
               interval={0}
-              stroke="#9F9EA1"
+              stroke="currentColor"
             />
-            <YAxis stroke="#9F9EA1" />
+            <YAxis stroke="currentColor" />
             <ChartTooltip />
             <Legend />
             <Bar 
               dataKey="kdSpread" 
               name="K/D Spread"
-              fill={(entry) => (entry.kdSpread >= 0 ? "#22C55E" : "#EF4444")}
+              fill="currentColor"
+              className={cn(
+                "[&_.recharts-rectangle]:fill-emerald-500 dark:[&_.recharts-rectangle]:fill-emerald-400",
+                "[&_.recharts-rectangle[height^='-']]:fill-red-500 dark:[&_.recharts-rectangle[height^='-']]:fill-red-400"
+              )}
             />
           </BarChart>
         </ChartContainer>

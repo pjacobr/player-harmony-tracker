@@ -125,11 +125,17 @@ export function GameAnalytics() {
           <div className="h-64 bg-gaming-card rounded-lg p-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={mapData}>
-                <XAxis dataKey="name" />
+                <XAxis 
+                  dataKey="name" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  interval={0}
+                />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="teamGames" name="Team Games" fill="#8884d8" />
-                <Bar dataKey="individualGames" name="Individual Games" fill="#82ca9d" />
+                <Bar dataKey="individualGames" name="Individual Games" stackId="a" fill="#82ca9d" />
+                <Bar dataKey="teamGames" name="Team Games" stackId="a" fill="#8884d8" />
               </BarChart>
             </ResponsiveContainer>
           </div>

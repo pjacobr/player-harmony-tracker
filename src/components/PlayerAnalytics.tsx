@@ -42,7 +42,23 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
     );
   }
 
-  const averageStats = calculatePlayerAverages(gameStats, players);
+  const averageStats = players.map(player => {
+    const playerGames = gameStats.filter(game => game.player_id === player.id);
+    const totalGames = playerGames.length || 1;
+    const kills = playerGames.reduce((sum, game) => sum + game.kills, 0);
+    const deaths = playerGames.reduce((sum, game) => sum + game.deaths, 0);
+    const assists = playerGames.reduce((sum, game) => sum + game.assists, 0);
+    const avgKills = kills / totalGames;
+    const avgDeaths = deaths / totalGames;
+
+    return {
+      name: player.name,
+      avgKills,
+      avgDeaths,
+      avgAssists: assists / totalGames,
+      kdSpread: avgKills - avgDeaths
+    };
+  });
 
   const playerStats = players.map(player => {
     const playerGames = gameStats.filter(game => game.player_id === player.id);
@@ -83,7 +99,6 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
     });
   };
 
-  // Calculate team vs solo performance with new KDA formula
   const calculateTeamVsSoloPerformance = () => {
     return players.map(player => {
       const playerGames = gameStats.filter(game => game.player_id === player.id);

@@ -40,9 +40,7 @@ export const KDAChart = ({ data }: KDAChartProps) => {
             <Legend />
             <Bar 
               dataKey="kdSpread" 
-              fill="#D946EF" 
               name="K/D Spread"
-              // Add conditional coloring based on positive/negative values
               fill={(entry) => (entry.kdSpread >= 0 ? "#22C55E" : "#EF4444")}
             />
           </BarChart>

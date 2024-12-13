@@ -99,7 +99,8 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
         median: kills[Math.floor(n * 0.5)],
         q3: kills[Math.floor(n * 0.75)],
         max: kills[n - 1],
-        average: kills.reduce((a, b) => a + b, 0) / n
+        average: kills.reduce((a, b) => a + b, 0) / n,
+        kdSpread: 0 // Added to satisfy type requirements, not used for sorting
       };
     });
   };

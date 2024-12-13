@@ -5,6 +5,8 @@ export interface BoxWhiskerData {
   median: number;
   q3: number;
   max: number;
+  average: number;
+  kdSpread: number;
 }
 
 export interface TransformedBoxWhiskerData {

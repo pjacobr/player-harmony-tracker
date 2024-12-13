@@ -7,7 +7,7 @@ import { getTooltipDescriptions } from "@/utils/kdaCalculations";
 interface KDAChartProps {
   data: Array<{
     name: string;
-    kda: number;
+    kdSpread: number;
   }>;
 }
 
@@ -17,8 +17,12 @@ export const KDAChart = ({ data }: KDAChartProps) => {
   return (
     <Card className="p-4 bg-gaming-card">
       <div className="flex items-center gap-2 mb-4">
-        <h3 className="text-xl font-bold text-gaming-accent">Average KDA Ratios</h3>
-        <StatTooltip {...tooltips.kda} />
+        <h3 className="text-xl font-bold text-gaming-accent">Average K/D Spread</h3>
+        <StatTooltip 
+          title="K/D Spread"
+          formula="Average Kills - Average Deaths"
+          description="The difference between average kills and deaths per game. A positive number means more kills than deaths on average."
+        />
       </div>
       <div className="h-[300px]">
         <ChartContainer config={{}}>
@@ -34,7 +38,13 @@ export const KDAChart = ({ data }: KDAChartProps) => {
             <YAxis stroke="#9F9EA1" />
             <ChartTooltip />
             <Legend />
-            <Bar dataKey="kda" fill="#D946EF" name="KDA Ratio" />
+            <Bar 
+              dataKey="kdSpread" 
+              fill="#D946EF" 
+              name="K/D Spread"
+              // Add conditional coloring based on positive/negative values
+              fill={(entry) => (entry.kdSpread >= 0 ? "#22C55E" : "#EF4444")}
+            />
           </BarChart>
         </ChartContainer>
       </div>

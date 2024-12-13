@@ -14,27 +14,33 @@ export const PlayerCard = ({ player, onUpdate, onDelete, onToggleSelect }: Playe
   const [isEditing, setIsEditing] = useState(false);
 
   return (
-    <div className="flex items-center justify-between p-2 bg-gaming-card/50 hover:bg-gaming-card transition-colors rounded">
-      <div className="flex-1 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="font-semibold w-40">{player.name}</span>
-          <div className="flex gap-4 text-sm text-gaming-muted">
-            <span>K: {player.kills}</span>
-            <span>D: {player.deaths}</span>
-            <span>A: {player.assists}</span>
-          </div>
-          <span className="text-gaming-accent font-bold">H: {player.handicap}</span>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-gaming-card/50 hover:bg-gaming-card transition-colors rounded gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
+        <span className="font-semibold text-lg sm:w-40 break-words">{player.name}</span>
+        <div className="flex flex-wrap gap-3 text-sm text-gaming-muted">
+          <span>Kills: {player.kills}</span>
+          <span>Deaths: {player.deaths}</span>
+          <span>Assists: {player.assists}</span>
+          <span className="text-gaming-accent font-bold">Handicap: {player.handicap}</span>
         </div>
-        <div className="flex gap-2">
-          <Button variant="destructive" size="sm" onClick={() => onDelete(player.id)}>Delete</Button>
-          <Button
-            variant={player.isSelected ? "default" : "outline"}
-            size="sm"
-            onClick={() => onToggleSelect(player.id)}
-          >
-            {player.isSelected ? "Selected" : "Select"}
-          </Button>
-        </div>
+      </div>
+      <div className="flex gap-2 w-full sm:w-auto">
+        <Button 
+          variant="destructive" 
+          size="sm" 
+          onClick={() => onDelete(player.id)}
+          className="flex-1 sm:flex-none"
+        >
+          Delete
+        </Button>
+        <Button
+          variant={player.isSelected ? "default" : "outline"}
+          size="sm"
+          onClick={() => onToggleSelect(player.id)}
+          className="flex-1 sm:flex-none"
+        >
+          {player.isSelected ? "Selected" : "Select"}
+        </Button>
       </div>
     </div>
   );

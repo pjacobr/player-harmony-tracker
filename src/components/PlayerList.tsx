@@ -10,9 +10,9 @@ interface PlayerListProps {
 
 export const PlayerList = ({ players, onUpdatePlayer, onDeletePlayer, onToggleSelect }: PlayerListProps) => {
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">Players</h2>
-      <div className="space-y-2">
+    <div className="mt-6">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4">Players ({players.length})</h2>
+      <div className="space-y-3">
         {players.map(player => (
           <PlayerCard
             key={player.id}

@@ -7,6 +7,11 @@ import { GameHeader } from "./GameHeader";
 import { GameScoreCard } from "./GameScoreCard";
 import { calculateWinner } from "@/utils/gameWinnerUtils";
 import { GameScore } from "@/types/gameScore";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface GameItemProps {
   game: {
@@ -38,13 +43,24 @@ export function GameItem({ game }: GameItemProps) {
       <AccordionContent>
         <div className="space-y-4">
           {game.screenshot_url && (
-            <div className="rounded-lg overflow-hidden max-w-2xl mx-auto">
-              <img
-                src={game.screenshot_url}
-                alt="Game Screenshot"
-                className="w-full h-auto object-cover"
-              />
-            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <div className="rounded-lg overflow-hidden max-w-2xl mx-auto cursor-pointer transition-transform hover:scale-[1.02]">
+                  <img
+                    src={game.screenshot_url}
+                    alt="Game Screenshot"
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+              </DialogTrigger>
+              <DialogContent className="max-w-[90vw] w-fit p-0 bg-transparent border-0">
+                <img
+                  src={game.screenshot_url}
+                  alt="Game Screenshot"
+                  className="w-auto max-w-[90vw] max-h-[90vh] object-contain rounded-lg"
+                />
+              </DialogContent>
+            </Dialog>
           )}
           <div className="space-y-2">
             {game.scores

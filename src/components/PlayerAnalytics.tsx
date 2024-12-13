@@ -51,15 +51,18 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
     const kills = playerGames.reduce((sum, game) => sum + game.kills, 0);
     const deaths = playerGames.reduce((sum, game) => sum + game.deaths, 0);
     const assists = playerGames.reduce((sum, game) => sum + game.assists, 0);
+    const avgKills = kills / totalGames;
+    const avgDeaths = deaths / totalGames;
 
     return {
       name: player.name,
       totalGames,
       winRate: calculateWinRate(wins, totalGames).toFixed(1),
       kda: calculateKDA(kills, deaths, assists).toFixed(2),
-      avgKills: (kills / totalGames).toFixed(1),
-      avgDeaths: (deaths / totalGames).toFixed(1),
+      avgKills: avgKills.toFixed(1),
+      avgDeaths: avgDeaths.toFixed(1),
       avgAssists: (assists / totalGames).toFixed(1),
+      kdSpread: (avgKills - avgDeaths).toFixed(1),
     };
   }).sort((a, b) => Number(b.kda) - Number(a.kda));
 
@@ -131,6 +134,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
                 <TableHead className="text-right">Avg Kills</TableHead>
                 <TableHead className="text-right">Avg Deaths</TableHead>
                 <TableHead className="text-right">Avg Assists</TableHead>
+                <TableHead className="text-right">K/D Spread</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -143,6 +147,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
                   <TableCell className="text-right">{stats.avgKills}</TableCell>
                   <TableCell className="text-right">{stats.avgDeaths}</TableCell>
                   <TableCell className="text-right">{stats.avgAssists}</TableCell>
+                  <TableCell className="text-right">{stats.kdSpread}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

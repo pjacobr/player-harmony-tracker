@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { Player } from "@/types/player";
-import { ForceGraph2D } from "react-force-graph";
+import { ForceGraph2D, ForceGraphMethods } from "react-force-graph";
 import { calculateTeamPerformance } from "@/utils/playerStats";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,7 +24,7 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
   const [selectedMetric, setSelectedMetric] = useState<FilterMetric>('winRate');
   const [minValue, setMinValue] = useState(0);
   const [graphZoom, setGraphZoom] = useState(1);
-  const [graphInstance, setGraphInstance] = useState<any>(null);
+  const graphRef = useRef<ForceGraphMethods>();
 
   const metricRanges = {
     winRate: { min: 0, max: 1, step: 0.1, format: (v: number) => `${(v * 100).toFixed(0)}%` },
@@ -69,18 +69,18 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
   }, [players, gameStats, selectedMetric, minValue]);
 
   const handleZoom = (zoomIn: boolean) => {
-    if (graphInstance) {
+    if (graphRef.current) {
       const newZoom = zoomIn ? graphZoom * 1.2 : graphZoom * 0.8;
       setGraphZoom(newZoom);
-      graphInstance.zoom(newZoom);
+      graphRef.current.zoom(newZoom);
     }
   };
 
   const resetZoom = () => {
-    if (graphInstance) {
+    if (graphRef.current) {
       setGraphZoom(1);
-      graphInstance.zoom(1);
-      graphInstance.centerAt(0, 0);
+      graphRef.current.zoom(1);
+      graphRef.current.centerAt(0, 0);
     }
   };
 
@@ -148,7 +148,7 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
 
         <div className="relative" style={{ height: graphHeight }}>
           <ForceGraph2D
-            ref={setGraphInstance}
+            ref={graphRef}
             graphData={graphData}
             nodeLabel="name"
             nodeColor={getNodeColor}
@@ -166,8 +166,8 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
             d3AlphaDecay={0.02}
             cooldownTicks={100}
             onEngineStop={() => {
-              if (graphInstance && graphZoom !== 1) {
-                graphInstance.zoom(graphZoom);
+              if (graphRef.current && graphZoom !== 1) {
+                graphRef.current.zoom(graphZoom);
               }
             }}
           />

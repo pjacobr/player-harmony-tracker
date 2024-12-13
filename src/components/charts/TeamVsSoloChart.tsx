@@ -2,16 +2,19 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } fro
 import { ChartContainer } from "@/components/ui/chart";
 import { StatTooltip } from "../analytics/StatTooltip";
 import { getTooltipDescriptions } from "@/utils/kdaCalculations";
+import { sortByName } from "@/utils/sortingUtils";
 
 interface TeamVsSoloChartProps {
   data: {
     name: string;
     soloKDA: number;
     teamKDA: number;
+    totalKDA: number;
   }[];
+  sortAscending: boolean;
 }
 
-export const TeamVsSoloChart = ({ data }: TeamVsSoloChartProps) => {
+export const TeamVsSoloChart = ({ data, sortAscending }: TeamVsSoloChartProps) => {
   const tooltips = getTooltipDescriptions();
   const chartConfig = {
     soloKDA: {
@@ -24,6 +27,8 @@ export const TeamVsSoloChart = ({ data }: TeamVsSoloChartProps) => {
     }
   };
 
+  const sortedData = [...data].sort((a, b) => sortByName(a, b, sortAscending));
+
   return (
     <div className="p-4 bg-gaming-card rounded-lg">
       <div className="flex items-center gap-2 mb-4">
@@ -33,13 +38,17 @@ export const TeamVsSoloChart = ({ data }: TeamVsSoloChartProps) => {
       <div className="h-[300px]">
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer>
-            <BarChart data={data} margin={{ top: 20, right: 20, bottom: 50, left: 20 }}>
+            <BarChart 
+              data={sortedData} 
+              margin={{ top: 20, right: 20, bottom: 70, left: 20 }}
+            >
               <XAxis 
                 dataKey="name" 
                 angle={-45}
                 textAnchor="end"
-                height={60}
+                height={70}
                 stroke="#9F9EA1"
+                interval={0}
               />
               <YAxis stroke="#9F9EA1" />
               <Tooltip 

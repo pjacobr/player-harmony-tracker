@@ -6,19 +6,19 @@ import { PerformanceChart } from "./charts/PerformanceChart";
 import { BoxWhiskerChart } from "./charts/BoxWhiskerChart";
 import { TeamVsSoloChart } from "./charts/TeamVsSoloChart";
 import { PlayerConnectionsChart } from "./charts/PlayerConnectionsChart";
-import { calculatePlayerAverages } from "@/utils/playerStats";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { calculateKDA, calculateWinRate } from "@/utils/kdaCalculations";
 import { Button } from "@/components/ui/button";
 import { ArrowDownAZ, ArrowUpAZ } from "lucide-react";
 import { useState } from "react";
+import { PlayerStatsTable } from "./analytics/PlayerStatsTable";
+import { sortByName, sortByKDSpread } from "@/utils/sortingUtils";
 
 interface PlayerAnalyticsProps {
   players: Player[];
 }
 
 export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
-  const [sortAscending, setSortAscending] = useState(false);
+  const [sortAscending, setSortAscending] = useState(true);
 
   const { data: gameStats } = useQuery({
     queryKey: ['gameStats'],
@@ -63,11 +63,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
       avgAssists: assists / totalGames,
       kdSpread: avgKills - avgDeaths
     };
-  });
-
-  const sortedStats = [...averageStats].sort((a, b) => 
-    sortAscending ? a.kdSpread - b.kdSpread : b.kdSpread - a.kdSpread
-  );
+  }).sort((a, b) => sortByName(a, b, sortAscending));
 
   const playerStats = players.map(player => {
     const playerGames = gameStats.filter(game => game.player_id === player.id);
@@ -89,10 +85,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
       avgAssists: (assists / totalGames).toFixed(1),
       kdSpread: (avgKills - avgDeaths).toFixed(1),
     };
-  }).sort((a, b) => sortAscending ? 
-    Number(a.kda) - Number(b.kda) : 
-    Number(b.kda) - Number(a.kda)
-  );
+  });
 
   const calculateBoxPlotData = () => {
     return players.map(player => {
@@ -109,10 +102,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
         max: kills[n - 1],
         average: kills.reduce((a, b) => a + b, 0) / n
       };
-    }).sort((a, b) => sortAscending ? 
-      a.average - b.average : 
-      b.average - a.average
-    );
+    }).sort((a, b) => sortByName(a, b, sortAscending));
   };
 
   const calculateTeamVsSoloPerformance = () => {
@@ -139,10 +129,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
         teamKDA,
         totalKDA: soloKDA + teamKDA
       };
-    }).sort((a, b) => sortAscending ? 
-      a.totalKDA - b.totalKDA : 
-      b.totalKDA - a.totalKDA
-    );
+    });
   };
 
   const boxPlotData = calculateBoxPlotData();
@@ -159,51 +146,18 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
           className="gap-2"
         >
           {sortAscending ? <ArrowUpAZ className="h-4 w-4" /> : <ArrowDownAZ className="h-4 w-4" />}
-          Sort {sortAscending ? 'Ascending' : 'Descending'}
+          Sort {sortAscending ? 'A to Z' : 'Z to A'}
         </Button>
       </div>
       
       <div className="grid md:grid-cols-2 gap-4">
-        <KDAChart data={sortedStats} />
-        <PerformanceChart data={sortedStats} />
+        <KDAChart data={averageStats} />
+        <PerformanceChart data={averageStats} />
         <BoxWhiskerChart data={boxPlotData} />
-        <TeamVsSoloChart data={teamVsSoloData} />
+        <TeamVsSoloChart data={teamVsSoloData} sortAscending={sortAscending} />
       </div>
       <PlayerConnectionsChart players={players} gameStats={gameStats} />
-      
-      <div>
-        <h3 className="text-xl font-semibold mb-4">Player Statistics Summary</h3>
-        <div className="bg-gaming-card rounded-lg p-4 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Player</TableHead>
-                <TableHead className="text-right">Games</TableHead>
-                <TableHead className="text-right">Win Rate</TableHead>
-                <TableHead className="text-right">KDA</TableHead>
-                <TableHead className="text-right">Avg Kills</TableHead>
-                <TableHead className="text-right">Avg Deaths</TableHead>
-                <TableHead className="text-right">Avg Assists</TableHead>
-                <TableHead className="text-right">K/D Spread</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {playerStats.map((stats) => (
-                <TableRow key={stats.name}>
-                  <TableCell className="font-medium">{stats.name}</TableCell>
-                  <TableCell className="text-right">{stats.totalGames}</TableCell>
-                  <TableCell className="text-right">{stats.winRate}%</TableCell>
-                  <TableCell className="text-right">{stats.kda}</TableCell>
-                  <TableCell className="text-right">{stats.avgKills}</TableCell>
-                  <TableCell className="text-right">{stats.avgDeaths}</TableCell>
-                  <TableCell className="text-right">{stats.avgAssists}</TableCell>
-                  <TableCell className="text-right">{stats.kdSpread}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+      <PlayerStatsTable playerStats={playerStats} sortAscending={sortAscending} />
     </div>
   );
 };

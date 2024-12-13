@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef } from "react";
 import { Player } from "@/types/player";
-import { ForceGraph2D, ForceGraphMethods } from "react-force-graph";
+import ForceGraph2D from "react-force-graph-2d";
 import { calculateTeamPerformance } from "@/utils/playerStats";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,6 +16,12 @@ interface PlayerConnectionsChartProps {
 
 type FilterMetric = 'winRate' | 'gamesPlayed' | 'avgKDA';
 
+// Define the type for the graph methods
+type GraphMethods = {
+  zoom: (value: number) => void;
+  centerAt: (x: number, y: number) => void;
+};
+
 export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnectionsChartProps) => {
   const { width } = useWindowSize();
   const graphWidth = Math.min(width - 32, 800);
@@ -24,7 +30,7 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
   const [selectedMetric, setSelectedMetric] = useState<FilterMetric>('winRate');
   const [minValue, setMinValue] = useState(0);
   const [graphZoom, setGraphZoom] = useState(1);
-  const graphRef = useRef<ForceGraphMethods>();
+  const graphRef = useRef<GraphMethods>();
 
   const metricRanges = {
     winRate: { min: 0, max: 1, step: 0.1, format: (v: number) => `${(v * 100).toFixed(0)}%` },

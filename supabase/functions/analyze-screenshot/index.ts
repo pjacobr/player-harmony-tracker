@@ -32,26 +32,43 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing game screenshots. Extract the kills, deaths, assists, game mode (Slayer or Team Slayer), team information, and winning team for the following players: ${playerNames.join(', ')}. 
-            For team games:
-            - Identify which team each player was on (1 or 2)
-            - Determine which team won based on total kills
-            Return ONLY a JSON object with no markdown formatting in this format: 
-            {
-              "gameMode": "Slayer|Team Slayer",
-              "winningTeam": number|null,
-              "scores": {
-                "playerName": {
-                  "kills": number,
-                  "deaths": number,
-                  "assists": number,
-                  "team": number|null
-                }
-              }
-            }. 
-            winningTeam should be null for non-team games.
-            team should be null for non-team games.
-            Try to match player names even if they're slightly different (e.g., with different capitalization or special characters).`,
+            content: `You are an expert at analyzing Halo game screenshots. The screenshots follow a specific format:
+
+1. Top left corner shows the winning team/player and game mode (either "Team Slayer" or "Slayer")
+2. Below that is a table with columns in this exact order:
+   - Players (player names)
+   - Score (total score)
+   - Kills (number of kills)
+   - Assists (number of assists)
+   - Deaths (number of deaths)
+
+For team games:
+- Players are grouped by their team
+- Team scores are shown at the top
+- The winning team is clearly indicated
+
+Extract data ONLY for these specific players: ${playerNames.join(', ')}. Try to match player names even if they have slight variations in capitalization or special characters.
+
+Return ONLY a JSON object with no markdown formatting in this format:
+{
+  "gameMode": "Slayer|Team Slayer",
+  "winningTeam": number|null,
+  "scores": {
+    "playerName": {
+      "kills": number,
+      "deaths": number,
+      "assists": number,
+      "team": number|null
+    }
+  }
+}
+
+Notes:
+- winningTeam should be null for non-team games (regular Slayer)
+- team should be null for non-team games
+- Only include data for the specified player names
+- Ensure all numbers are integers
+- If a player's stats cannot be found, exclude them from the response`,
           },
           {
             role: 'user',

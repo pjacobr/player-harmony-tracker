@@ -47,7 +47,7 @@ export const getNodeColor = (node: any, links: any[]) => {
   const hasLinks = links.some(
     (link: any) => link.source.id === node.id || link.target.id === node.id
   );
-  return hasLinks ? "hsl(var(--primary))" : "hsl(var(--muted))";
+  return hasLinks ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))";
 };
 
 export const getLinkColor = (link: any, selectedMetric: FilterMetric, metricRanges: any) => {

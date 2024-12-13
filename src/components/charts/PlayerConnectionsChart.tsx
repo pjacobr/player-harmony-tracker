@@ -6,6 +6,7 @@ import { useWindowSize } from "@/hooks/use-window-size";
 import { ConnectionControls } from "./player-connections/ConnectionControls";
 import { FilterMetric } from "./player-connections/types";
 import { createGraphData, getNodeColor, getLinkColor } from "./player-connections/graphUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PlayerConnectionsChartProps {
   players: Player[];
@@ -14,8 +15,9 @@ interface PlayerConnectionsChartProps {
 
 export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnectionsChartProps) => {
   const { width } = useWindowSize();
-  const graphWidth = Math.min(width - 32, 800);
-  const graphHeight = Math.min(500, graphWidth * 0.75);
+  const isMobile = useIsMobile();
+  const graphWidth = isMobile ? width - 32 : Math.min(width - 32, 800);
+  const graphHeight = isMobile ? 300 : Math.min(500, graphWidth * 0.75);
   
   const [selectedMetric, setSelectedMetric] = useState<FilterMetric>('winRate');
   const [minValue, setMinValue] = useState(0);
@@ -69,7 +71,7 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
           nodeColor={(node) => getNodeColor(node, graphData.links)}
           linkColor={(link) => getLinkColor(link, selectedMetric, metricRanges)}
           linkWidth={(link: any) => (link.gamesPlayed as number) / 2}
-          nodeRelSize={8}
+          nodeRelSize={isMobile ? 6 : 8}
           linkLabel={(link: any) => {
             const l = link as any;
             return `Games: ${l.gamesPlayed} | Win Rate: ${(l.winRate * 100).toFixed(1)}% | Avg KDA: ${l.avgKDA.toFixed(2)}`;

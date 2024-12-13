@@ -4,20 +4,18 @@ import { BarChart, Bar, XAxis, YAxis, Legend } from "recharts";
 import { StatTooltip } from "../analytics/StatTooltip";
 import { getTooltipDescriptions } from "@/utils/kdaCalculations";
 import { cn } from "@/lib/utils";
-import { sortByName } from "@/utils/sortingUtils";
+import { SortOption } from "@/utils/sortingUtils";
 
 interface KDAChartProps {
   data: Array<{
     name: string;
     kdSpread: number;
   }>;
-  sortAscending: boolean;
+  sortOption: SortOption;
 }
 
-export const KDAChart = ({ data, sortAscending }: KDAChartProps) => {
+export const KDAChart = ({ data, sortOption }: KDAChartProps) => {
   const tooltips = getTooltipDescriptions();
-  
-  const sortedData = [...data].sort((a, b) => sortByName(a, b, sortAscending));
   
   return (
     <Card className="p-4 bg-gaming-card">
@@ -31,7 +29,7 @@ export const KDAChart = ({ data, sortAscending }: KDAChartProps) => {
       </div>
       <div className="h-[300px]">
         <ChartContainer config={{}}>
-          <BarChart data={sortedData}>
+          <BarChart data={data}>
             <XAxis 
               dataKey="name" 
               angle={-45} 

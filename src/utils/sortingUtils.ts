@@ -4,14 +4,28 @@ export const sortByName = <T extends { name: string }>(a: T, b: T, ascending: bo
     b.name.localeCompare(a.name);
 };
 
-export const sortByKDA = (a: { kda: string }, b: { kda: string }, ascending: boolean) => {
-  return ascending ? 
-    Number(a.kda) - Number(b.kda) : 
-    Number(b.kda) - Number(a.kda);
-};
-
-export const sortByKDSpread = (a: { kdSpread: number }, b: { kdSpread: number }, ascending: boolean) => {
+export const sortByKDSpread = <T extends { kdSpread: number }>(a: T, b: T, ascending: boolean) => {
   return ascending ? 
     a.kdSpread - b.kdSpread : 
     b.kdSpread - a.kdSpread;
+};
+
+export type SortOption = 'nameAsc' | 'scoreAsc' | 'scoreDesc';
+
+export const sortData = <T extends { name: string; kdSpread: number }>(
+  data: T[], 
+  sortOption: SortOption
+): T[] => {
+  const sortedData = [...data];
+  
+  switch (sortOption) {
+    case 'nameAsc':
+      return sortedData.sort((a, b) => a.name.localeCompare(b.name));
+    case 'scoreAsc':
+      return sortedData.sort((a, b) => a.kdSpread - b.kdSpread);
+    case 'scoreDesc':
+      return sortedData.sort((a, b) => b.kdSpread - a.kdSpread);
+    default:
+      return sortedData;
+  }
 };

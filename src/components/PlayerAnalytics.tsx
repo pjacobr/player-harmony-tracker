@@ -7,18 +7,17 @@ import { BoxWhiskerChart } from "./charts/BoxWhiskerChart";
 import { TeamVsSoloChart } from "./charts/TeamVsSoloChart";
 import { PlayerConnectionsChart } from "./charts/PlayerConnectionsChart";
 import { calculateKDA, calculateWinRate } from "@/utils/kdaCalculations";
-import { Button } from "@/components/ui/button";
-import { ArrowDownAZ, ArrowUpAZ } from "lucide-react";
 import { useState } from "react";
 import { PlayerStatsTable } from "./analytics/PlayerStatsTable";
-import { sortByName } from "@/utils/sortingUtils";
+import { sortData, SortOption } from "@/utils/sortingUtils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PlayerAnalyticsProps {
   players: Player[];
 }
 
 export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
-  const [sortAscending, setSortAscending] = useState(true);
+  const [sortOption, setSortOption] = useState<SortOption>('nameAsc');
 
   const { data: gameStats } = useQuery({
     queryKey: ['gameStats'],
@@ -127,7 +126,8 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
         name: player.name,
         soloKDA,
         teamKDA,
-        totalKDA: soloKDA + teamKDA
+        totalKDA: soloKDA + teamKDA,
+        kdSpread: soloKDA - teamKDA
       };
     });
   };
@@ -135,29 +135,38 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
   const boxPlotData = calculateBoxPlotData();
   const teamVsSoloData = calculateTeamVsSoloPerformance();
 
+  const sortedAverageStats = sortData(averageStats, sortOption);
+  const sortedTeamVsSoloData = sortData(teamVsSoloData, sortOption);
+  const sortedBoxPlotData = sortData(boxPlotData, sortOption);
+  const sortedPlayerStats = sortData(playerStats, sortOption);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Player Analytics</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setSortAscending(!sortAscending)}
-          className="gap-2"
+        <Select
+          value={sortOption}
+          onValueChange={(value: SortOption) => setSortOption(value)}
         >
-          {sortAscending ? <ArrowUpAZ className="h-4 w-4" /> : <ArrowDownAZ className="h-4 w-4" />}
-          Sort {sortAscending ? 'A to Z' : 'Z to A'}
-        </Button>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="nameAsc">Name (A to Z)</SelectItem>
+            <SelectItem value="scoreAsc">Score (Low to High)</SelectItem>
+            <SelectItem value="scoreDesc">Score (High to Low)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       
       <div className="grid md:grid-cols-2 gap-4">
-        <KDAChart data={averageStats} sortAscending={sortAscending} />
-        <PerformanceChart data={averageStats} />
-        <BoxWhiskerChart data={boxPlotData} />
-        <TeamVsSoloChart data={teamVsSoloData} sortAscending={sortAscending} />
+        <KDAChart data={sortedAverageStats} sortOption={sortOption} />
+        <PerformanceChart data={sortedAverageStats} />
+        <BoxWhiskerChart data={sortedBoxPlotData} />
+        <TeamVsSoloChart data={sortedTeamVsSoloData} sortOption={sortOption} />
       </div>
       <PlayerConnectionsChart players={players} gameStats={gameStats} />
-      <PlayerStatsTable playerStats={playerStats} sortAscending={sortAscending} />
+      <PlayerStatsTable playerStats={sortedPlayerStats} sortOption={sortOption} />
     </div>
   );
 };

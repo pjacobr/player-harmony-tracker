@@ -56,8 +56,8 @@ Return ONLY a JSON object with no markdown formatting in this format:
   "scores": {
     "playerName": {
       "kills": number,
-      "deaths": number,
       "assists": number,
+      "deaths": number,
       "team": number|null
     }
   }

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowDownAZ, ArrowUpAZ } from "lucide-react";
 import { useState } from "react";
 import { PlayerStatsTable } from "./analytics/PlayerStatsTable";
-import { sortByName, sortByKDSpread } from "@/utils/sortingUtils";
+import { sortByName } from "@/utils/sortingUtils";
 
 interface PlayerAnalyticsProps {
   players: Player[];
@@ -63,7 +63,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
       avgAssists: assists / totalGames,
       kdSpread: avgKills - avgDeaths
     };
-  }).sort((a, b) => sortByName(a, b, sortAscending));
+  });
 
   const playerStats = players.map(player => {
     const playerGames = gameStats.filter(game => game.player_id === player.id);
@@ -102,7 +102,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
         max: kills[n - 1],
         average: kills.reduce((a, b) => a + b, 0) / n
       };
-    }).sort((a, b) => sortByName(a, b, sortAscending));
+    });
   };
 
   const calculateTeamVsSoloPerformance = () => {
@@ -151,7 +151,7 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
       </div>
       
       <div className="grid md:grid-cols-2 gap-4">
-        <KDAChart data={averageStats} />
+        <KDAChart data={averageStats} sortAscending={sortAscending} />
         <PerformanceChart data={averageStats} />
         <BoxWhiskerChart data={boxPlotData} />
         <TeamVsSoloChart data={teamVsSoloData} sortAscending={sortAscending} />

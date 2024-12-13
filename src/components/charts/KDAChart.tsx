@@ -4,19 +4,20 @@ import { BarChart, Bar, XAxis, YAxis, Legend } from "recharts";
 import { StatTooltip } from "../analytics/StatTooltip";
 import { getTooltipDescriptions } from "@/utils/kdaCalculations";
 import { cn } from "@/lib/utils";
+import { sortByName } from "@/utils/sortingUtils";
 
 interface KDAChartProps {
   data: Array<{
     name: string;
     kdSpread: number;
   }>;
+  sortAscending: boolean;
 }
 
-export const KDAChart = ({ data }: KDAChartProps) => {
+export const KDAChart = ({ data, sortAscending }: KDAChartProps) => {
   const tooltips = getTooltipDescriptions();
   
-  // Sort data from highest to lowest KD spread
-  const sortedData = [...data].sort((a, b) => b.kdSpread - a.kdSpread);
+  const sortedData = [...data].sort((a, b) => sortByName(a, b, sortAscending));
   
   return (
     <Card className="p-4 bg-gaming-card">

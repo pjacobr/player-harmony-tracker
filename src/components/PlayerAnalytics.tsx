@@ -9,6 +9,7 @@ import { PlayerConnectionsChart } from "./charts/PlayerConnectionsChart";
 import { calculateKDA, calculateWinRate } from "@/utils/kdaCalculations";
 import { useState } from "react";
 import { PlayerStatsTable } from "./analytics/PlayerStatsTable";
+import { PlayerStatsCards } from "./analytics/PlayerStatsCards";
 import { sortData, SortOption } from "@/utils/sortingUtils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -159,6 +160,8 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
           </SelectContent>
         </Select>
       </div>
+
+      <PlayerStatsCards players={players} gameStats={gameStats} />
       
       <div className="grid md:grid-cols-2 gap-4">
         <KDAChart data={sortedAverageStats} sortOption={sortOption} />

@@ -139,20 +139,6 @@ export function GameScoreCard({ score }: GameScoreProps) {
             )}
           </div>
           <div className="flex flex-col items-center">
-            <span className="text-gaming-muted">Deaths</span>
-            {isEditing ? (
-              <Input
-                type="number"
-                min="0"
-                value={editedScore.deaths}
-                onChange={(e) => handleInputChange('deaths', e.target.value)}
-                className="w-16 h-8 text-center"
-              />
-            ) : (
-              <span>{score.deaths}</span>
-            )}
-          </div>
-          <div className="flex flex-col items-center">
             <span className="text-gaming-muted">Assists</span>
             {isEditing ? (
               <Input
@@ -164,6 +150,20 @@ export function GameScoreCard({ score }: GameScoreProps) {
               />
             ) : (
               <span>{score.assists}</span>
+            )}
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-gaming-muted">Deaths</span>
+            {isEditing ? (
+              <Input
+                type="number"
+                min="0"
+                value={editedScore.deaths}
+                onChange={(e) => handleInputChange('deaths', e.target.value)}
+                className="w-16 h-8 text-center"
+              />
+            ) : (
+              <span>{score.deaths}</span>
             )}
           </div>
         </div>

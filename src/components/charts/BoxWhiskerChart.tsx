@@ -48,11 +48,11 @@ export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
               <Tooltip content={BoxWhiskerTooltip} />
               
               <Bar stackId="boxplot" dataKey="min" fill="none" />
-              <Bar stackId="boxplot" dataKey="bottomWhisker" fill="none" shape={<WhiskerLine />} />
-              <Bar stackId="boxplot" dataKey="bottomBox" className="fill-primary stroke-primary/20" strokeWidth={1} />
-              <Bar stackId="boxplot" dataKey="min" fill="none" shape={<MedianLine />} />
-              <Bar stackId="boxplot" dataKey="topBox" className="fill-primary stroke-primary/20" strokeWidth={1} />
-              <Bar stackId="boxplot" dataKey="topWhisker" fill="none" shape={<WhiskerLine />} />
+              <Bar stackId="boxplot" dataKey="bottomWhisker" fill="none" shape={<WhiskerLine color="hsl(var(--primary))" />} />
+              <Bar stackId="boxplot" dataKey="bottomBox" fill="hsl(var(--primary))" stroke="hsl(var(--primary))" strokeWidth={1} />
+              <Bar stackId="boxplot" dataKey="min" fill="none" shape={<MedianLine color="hsl(var(--primary))" />} />
+              <Bar stackId="boxplot" dataKey="topBox" fill="hsl(var(--primary))" stroke="hsl(var(--primary))" strokeWidth={1} />
+              <Bar stackId="boxplot" dataKey="topWhisker" fill="none" shape={<WhiskerLine color="hsl(var(--primary))" />} />
             </ComposedChart>
           </ResponsiveContainer>
         </ChartContainer>

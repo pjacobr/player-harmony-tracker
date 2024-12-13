@@ -43,10 +43,7 @@ export const KDAChart = ({ data, sortOption }: KDAChartProps) => {
             <Bar 
               dataKey="kdSpread" 
               name="K/D Spread"
-              className={cn(
-                "[&_.recharts-rectangle]:fill-primary dark:[&_.recharts-rectangle]:fill-primary",
-                "[&_.recharts-rectangle[height^='-']]:fill-destructive dark:[&_.recharts-rectangle[height^='-']]:fill-destructive"
-              )}
+              fill="hsl(var(--primary))"
             />
           </BarChart>
         </ChartContainer>

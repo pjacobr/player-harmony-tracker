@@ -35,9 +35,9 @@ export const PerformanceChart = ({ data }: PerformanceChartProps) => {
             <YAxis />
             <ChartTooltip />
             <Legend />
-            <Bar dataKey="avgKills" className="fill-primary" name="Avg Kills" />
-            <Bar dataKey="avgDeaths" className="fill-secondary" name="Avg Deaths" />
-            <Bar dataKey="avgAssists" className="fill-accent" name="Avg Assists" />
+            <Bar dataKey="avgKills" name="Avg Kills" fill="hsl(var(--primary))" />
+            <Bar dataKey="avgDeaths" name="Avg Deaths" fill="hsl(var(--secondary))" />
+            <Bar dataKey="avgAssists" name="Avg Assists" fill="hsl(var(--accent))" />
           </BarChart>
         </ChartContainer>
       </div>

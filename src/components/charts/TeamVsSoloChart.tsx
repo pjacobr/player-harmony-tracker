@@ -54,8 +54,8 @@ export const TeamVsSoloChart = ({ data, sortOption }: TeamVsSoloChartProps) => {
                 }}
               />
               <Legend />
-              <Bar dataKey="soloKDA" name="Solo KDA" className="fill-primary" />
-              <Bar dataKey="teamKDA" name="Team KDA" className="fill-secondary" />
+              <Bar dataKey="soloKDA" name="Solo KDA" fill="hsl(var(--primary))" />
+              <Bar dataKey="teamKDA" name="Team KDA" fill="hsl(var(--secondary))" />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>

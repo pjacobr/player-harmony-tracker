@@ -1,7 +1,11 @@
 import { RectangleProps } from "recharts";
 
-export const MedianLine = (props: RectangleProps) => {
-  const { x, y, width } = props;
+interface MedianLineProps extends RectangleProps {
+  color?: string;
+}
+
+export const MedianLine = (props: MedianLineProps) => {
+  const { x, y, width, color = "hsl(var(--primary))" } = props;
   if (x == null || y == null || width == null) return null;
   
   return (
@@ -10,7 +14,7 @@ export const MedianLine = (props: RectangleProps) => {
       y1={y} 
       x2={x + width} 
       y2={y} 
-      stroke="#E5DEFF" 
+      stroke={color}
       strokeWidth={2}
     />
   );

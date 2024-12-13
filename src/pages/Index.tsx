@@ -11,7 +11,6 @@ import { PlayerAnalytics } from "@/components/PlayerAnalytics";
 import { GameLog } from "@/components/GameLog";
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import ParticleBackground from "@/components/ParticleBackground";
 import { TabNavigation } from "@/components/navigation/TabNavigation";
 
 const Index = () => {
@@ -118,78 +117,75 @@ const Index = () => {
   };
 
   return (
-    <>
-      <ParticleBackground />
-      <div className="min-h-screen bg-gaming-background/80 text-white p-2 sm:p-4">
-        <div className="max-w-6xl mx-auto space-y-4 sm:space-y-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-8">
-            Player Handicap Tracker
-          </h1>
+    <div className="min-h-screen bg-gaming-background/80 text-white p-2 sm:p-4">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-8">
+          Player Handicap Tracker
+        </h1>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-            <div className="mt-4">
-              <TabsContent value="players" className="mt-0">
-                <AddPlayerForm onAddPlayer={(name) => addPlayerMutation.mutate(name)} />
-                <PlayerList
-                  players={players}
-                  onUpdatePlayer={() => {
+          <div className="mt-4">
+            <TabsContent value="players" className="mt-0">
+              <AddPlayerForm onAddPlayer={(name) => addPlayerMutation.mutate(name)} />
+              <PlayerList
+                players={players}
+                onUpdatePlayer={() => {
+                  queryClient.invalidateQueries({ queryKey: ["players"] });
+                }}
+                onDeletePlayer={(id) => deletePlayerMutation.mutate(id)}
+                onToggleSelect={handleToggleSelect}
+              />
+            </TabsContent>
+
+            <TabsContent value="analytics" className="mt-0">
+              {selectedPlayers.length > 0 ? (
+                <PlayerAnalytics players={selectedPlayers} />
+              ) : (
+                <div className="text-center text-gaming-muted">
+                  Please select players to view analytics
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="teams" className="mt-0">
+              {selectedPlayers.length > 0 ? (
+                <TeamDisplay
+                  teamA={teamA}
+                  teamB={teamB}
+                  onShuffle={handleShuffle}
+                />
+              ) : (
+                <div className="text-center text-gaming-muted">
+                  Please select players to create teams
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="screenshots" className="mt-0">
+              {selectedPlayers.length > 0 ? (
+                <ScreenshotUpload
+                  onScoresDetected={(scores) => {
+                    console.log("Scores detected:", scores);
                     queryClient.invalidateQueries({ queryKey: ["players"] });
                   }}
-                  onDeletePlayer={(id) => deletePlayerMutation.mutate(id)}
-                  onToggleSelect={handleToggleSelect}
+                  players={selectedPlayers}
                 />
-              </TabsContent>
+              ) : (
+                <div className="text-center text-gaming-muted">
+                  Please select players to upload screenshots
+                </div>
+              )}
+            </TabsContent>
 
-              <TabsContent value="analytics" className="mt-0">
-                {selectedPlayers.length > 0 ? (
-                  <PlayerAnalytics players={selectedPlayers} />
-                ) : (
-                  <div className="text-center text-gaming-muted">
-                    Please select players to view analytics
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="teams" className="mt-0">
-                {selectedPlayers.length > 0 ? (
-                  <TeamDisplay
-                    teamA={teamA}
-                    teamB={teamB}
-                    onShuffle={handleShuffle}
-                  />
-                ) : (
-                  <div className="text-center text-gaming-muted">
-                    Please select players to create teams
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="screenshots" className="mt-0">
-                {selectedPlayers.length > 0 ? (
-                  <ScreenshotUpload
-                    onScoresDetected={(scores) => {
-                      console.log("Scores detected:", scores);
-                      queryClient.invalidateQueries({ queryKey: ["players"] });
-                    }}
-                    players={selectedPlayers}
-                  />
-                ) : (
-                  <div className="text-center text-gaming-muted">
-                    Please select players to upload screenshots
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="game-logs" className="mt-0">
-                <GameLog />
-              </TabsContent>
-            </div>
-          </Tabs>
-        </div>
+            <TabsContent value="game-logs" className="mt-0">
+              <GameLog />
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
-    </>
+    </div>
   );
 };
 

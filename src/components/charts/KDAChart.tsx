@@ -36,15 +36,15 @@ export const KDAChart = ({ data, sortOption }: KDAChartProps) => {
               textAnchor="end" 
               height={70} 
               interval={0}
-              stroke="currentColor"
+              stroke="#9F9EA1"
             />
-            <YAxis stroke="currentColor" />
+            <YAxis stroke="#9F9EA1" />
             <ChartTooltip />
             <Legend />
             <Bar 
               dataKey="kdSpread" 
               name="K/D Spread"
-              fill="currentColor"
+              fill="#9b87f5"
               className={cn(
                 "[&_.recharts-rectangle]:fill-emerald-500 dark:[&_.recharts-rectangle]:fill-emerald-400",
                 "[&_.recharts-rectangle[height^='-']]:fill-red-500 dark:[&_.recharts-rectangle[height^='-']]:fill-red-400"

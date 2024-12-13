@@ -3,6 +3,7 @@ import { ChartContainer } from "@/components/ui/chart";
 import { StatTooltip } from "../analytics/StatTooltip";
 import { getTooltipDescriptions } from "@/utils/kdaCalculations";
 import { SortOption } from "@/utils/sortingUtils";
+import { Card } from "@/components/ui/card";
 
 interface TeamVsSoloChartProps {
   data: {
@@ -19,19 +20,19 @@ export const TeamVsSoloChart = ({ data, sortOption }: TeamVsSoloChartProps) => {
   const tooltips = getTooltipDescriptions();
   const chartConfig = {
     soloKDA: {
-      color: "#D946EF",
+      color: "#9b87f5",
       label: "Solo Performance"
     },
     teamKDA: {
-      color: "#8B5CF6",
+      color: "#7E69AB",
       label: "Team Performance"
     }
   };
 
   return (
-    <div className="p-4 bg-gaming-card rounded-lg">
+    <Card className="p-4 bg-gaming-card">
       <div className="flex items-center gap-2 mb-4">
-        <h3 className="text-xl font-semibold">Team vs Solo Performance</h3>
+        <h3 className="text-xl font-semibold text-gaming-accent">Team vs Solo Performance</h3>
         <StatTooltip {...tooltips.teamSolo} />
       </div>
       <div className="h-[300px]">
@@ -70,6 +71,6 @@ export const TeamVsSoloChart = ({ data, sortOption }: TeamVsSoloChartProps) => {
           </ResponsiveContainer>
         </ChartContainer>
       </div>
-    </div>
+    </Card>
   );
 };

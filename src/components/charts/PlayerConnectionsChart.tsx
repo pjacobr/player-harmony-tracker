@@ -61,7 +61,7 @@ export const PlayerConnectionsChart = ({ players, gameStats }: PlayerConnections
         metricRanges={metricRanges}
       />
 
-      <div className="relative" style={{ height: graphHeight }}>
+      <div className="relative dark:bg-background" style={{ height: graphHeight }}>
         <ForceGraph2D
           ref={graphRef}
           graphData={graphData}

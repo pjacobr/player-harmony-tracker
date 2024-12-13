@@ -55,7 +55,7 @@ export const getLinkColor = (link: any, selectedMetric: FilterMetric, metricRang
   const { min, max } = metricRanges[selectedMetric];
   const normalizedValue = (value - min) / (max - min);
   
-  if (normalizedValue >= 0.7) return "hsl(var(--success))";
-  if (normalizedValue >= 0.4) return "hsl(var(--warning))";
-  return "hsl(var(--destructive))";
+  if (normalizedValue >= 0.7) return "hsl(var(--accent))";
+  if (normalizedValue >= 0.4) return "hsl(var(--secondary))";
+  return "hsl(var(--muted))";
 };

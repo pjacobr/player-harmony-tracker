@@ -42,12 +42,19 @@ export function GameItem({ game }: GameItemProps) {
 
   // Map the scores to include all required GameScore properties
   const mappedScores: GameScore[] = game.scores.map(score => ({
-    ...score,
+    id: score.id,
     game_id: game.id,
+    player_id: score.player_id,
+    kills: score.kills,
+    deaths: score.deaths,
+    assists: score.assists,
+    won: score.won,
     created_at: game.created_at,
     game_mode: game.game_mode,
+    team_number: score.team_number,
     screenshot_url: game.screenshot_url,
-    map: game.map
+    map: game.map,
+    player: score.player
   }));
 
   return (

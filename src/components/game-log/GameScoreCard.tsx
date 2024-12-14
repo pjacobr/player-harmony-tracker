@@ -4,6 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { ScoreInput } from "./ScoreInput";
 import { EditControls } from "./EditControls";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface GameScoreProps {
   score: {
@@ -26,6 +33,7 @@ export function GameScoreCard({ score }: GameScoreProps) {
     kills: score.kills,
     deaths: score.deaths,
     assists: score.assists,
+    team_number: score.team_number,
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -66,12 +74,14 @@ export function GameScoreCard({ score }: GameScoreProps) {
       kills: Math.max(0, editedScore.kills),
       deaths: Math.max(0, editedScore.deaths),
       assists: Math.max(0, editedScore.assists),
+      team_number: editedScore.team_number,
     };
 
     if (
       validatedScore.kills !== score.kills ||
       validatedScore.deaths !== score.deaths ||
-      validatedScore.assists !== score.assists
+      validatedScore.assists !== score.assists ||
+      validatedScore.team_number !== score.team_number
     ) {
       updateScoreMutation.mutate(validatedScore);
     } else {
@@ -84,6 +94,7 @@ export function GameScoreCard({ score }: GameScoreProps) {
       kills: score.kills,
       deaths: score.deaths,
       assists: score.assists,
+      team_number: score.team_number,
     });
     setIsEditing(false);
   };
@@ -93,6 +104,13 @@ export function GameScoreCard({ score }: GameScoreProps) {
     setEditedScore(prev => ({
       ...prev,
       [field]: Math.max(0, numValue)
+    }));
+  };
+
+  const handleTeamChange = (value: string) => {
+    setEditedScore(prev => ({
+      ...prev,
+      team_number: value === "null" ? null : parseInt(value)
     }));
   };
 
@@ -106,8 +124,26 @@ export function GameScoreCard({ score }: GameScoreProps) {
     >
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-8 w-full sm:w-auto">
         <span className="font-medium">{score.player.name}</span>
-        {score.team_number && (
-          <span className="text-sm">Team {score.team_number}</span>
+        {isEditing ? (
+          <Select
+            value={editedScore.team_number?.toString() ?? "null"}
+            onValueChange={handleTeamChange}
+          >
+            <SelectTrigger className="w-[100px]">
+              <SelectValue placeholder="Team" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="null">No Team</SelectItem>
+              <SelectItem value="1">Team 1</SelectItem>
+              <SelectItem value="2">Team 2</SelectItem>
+              <SelectItem value="3">Team 3</SelectItem>
+              <SelectItem value="4">Team 4</SelectItem>
+            </SelectContent>
+          </Select>
+        ) : (
+          score.team_number && (
+            <span className="text-sm">Team {score.team_number}</span>
+          )
         )}
       </div>
       

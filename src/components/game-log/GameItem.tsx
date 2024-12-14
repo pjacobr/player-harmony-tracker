@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { GameScoreList } from "./GameScoreList";
+import { GameScore } from "@/types/gameScore";
 
 interface GameItemProps {
   game: {
@@ -38,6 +39,16 @@ interface GameItemProps {
 
 export function GameItem({ game }: GameItemProps) {
   const { winners, winningTeam } = calculateWinner(game.scores, game.game_mode);
+
+  // Map the scores to include all required GameScore properties
+  const mappedScores: GameScore[] = game.scores.map(score => ({
+    ...score,
+    game_id: game.id,
+    created_at: game.created_at,
+    game_mode: game.game_mode,
+    screenshot_url: game.screenshot_url,
+    map: game.map
+  }));
 
   return (
     <AccordionItem value={game.id}>
@@ -74,7 +85,7 @@ export function GameItem({ game }: GameItemProps) {
           )}
           
           <GameScoreList
-            scores={game.scores}
+            scores={mappedScores}
             gameId={game.id}
             gameMode={game.game_mode}
             mapName={game.map?.name}

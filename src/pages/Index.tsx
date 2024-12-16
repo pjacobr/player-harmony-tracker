@@ -12,6 +12,7 @@ import { GameLog } from "@/components/GameLog";
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { TabNavigation } from "@/components/navigation/TabNavigation";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const { toast } = useToast();
@@ -48,7 +49,7 @@ const Index = () => {
           ...player,
           ...totals,
           handicap: handicapResult || 5,
-          isSelected: true
+          isSelected: true // Default all players to selected
         };
       }));
 
@@ -101,6 +102,15 @@ const Index = () => {
     queryClient.setQueryData(['players'], updatedPlayers);
   };
 
+  const handleSelectAll = () => {
+    const updatedPlayers = players.map(p => ({ ...p, isSelected: true }));
+    queryClient.setQueryData(['players'], updatedPlayers);
+    toast({
+      title: "Success",
+      description: "All players selected",
+    });
+  };
+
   if (isLoading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
@@ -128,7 +138,16 @@ const Index = () => {
 
           <div className="mt-4">
             <TabsContent value="players" className="mt-0">
-              <AddPlayerForm onAddPlayer={(name) => addPlayerMutation.mutate(name)} />
+              <div className="flex justify-between items-center mb-4">
+                <AddPlayerForm onAddPlayer={(name) => addPlayerMutation.mutate(name)} />
+                <Button 
+                  variant="outline" 
+                  onClick={handleSelectAll}
+                  className="ml-4"
+                >
+                  Select All Players
+                </Button>
+              </div>
               <PlayerList
                 players={players}
                 onUpdatePlayer={() => {

@@ -15,14 +15,10 @@ export type Database = {
           created_at: string
           deaths: number
           game_id: string
-          game_mode: string | null
           id: string
           kills: number
-          map_id: string | null
-          max_game_score: number | null
           player_id: string
           score: number | null
-          screenshot_url: string | null
           team_number: number | null
           won: boolean | null
         }
@@ -31,14 +27,10 @@ export type Database = {
           created_at?: string
           deaths?: number
           game_id?: string
-          game_mode?: string | null
           id?: string
           kills?: number
-          map_id?: string | null
-          max_game_score?: number | null
           player_id: string
           score?: number | null
-          screenshot_url?: string | null
           team_number?: number | null
           won?: boolean | null
         }
@@ -47,18 +39,21 @@ export type Database = {
           created_at?: string
           deaths?: number
           game_id?: string
-          game_mode?: string | null
           id?: string
           kills?: number
-          map_id?: string | null
-          max_game_score?: number | null
           player_id?: string
           score?: number | null
-          screenshot_url?: string | null
           team_number?: number | null
           won?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_game"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_player"
             columns: ["player_id"]
@@ -67,17 +62,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "game_scores_map_id_fkey"
-            columns: ["map_id"]
-            isOneToOne: false
-            referencedRelation: "maps"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "game_scores_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          created_at: string
+          game_mode: string | null
+          id: string
+          map_id: string | null
+          max_game_score: number | null
+          screenshot_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          game_mode?: string | null
+          id?: string
+          map_id?: string | null
+          max_game_score?: number | null
+          screenshot_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          game_mode?: string | null
+          id?: string
+          map_id?: string | null
+          max_game_score?: number | null
+          screenshot_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "games_map_id_fkey"
+            columns: ["map_id"]
+            isOneToOne: false
+            referencedRelation: "maps"
             referencedColumns: ["id"]
           },
         ]

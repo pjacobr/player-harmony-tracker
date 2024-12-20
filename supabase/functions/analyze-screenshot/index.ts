@@ -27,43 +27,61 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing Halo game screenshots. Extract data from the scoreboard by columns.
+            content: `You are a specialized Halo scoreboard analyzer. Your task is to extract data from a Halo game scoreboard image with extreme precision.
 
-First, determine if this is a team game or individual game (Slayer).
-Then, extract data from EACH COLUMN separately, maintaining the exact order from top to bottom.
+Follow these steps exactly:
 
-Return a JSON object with this EXACT structure:
+1. First, identify if this is a Team game (look for team indicators) or Slayer (no teams).
+
+2. For each column, working left to right:
+   - Column 1: Player Names (leftmost)
+   - Column 2: Total Score
+   - Column 3: Kills (K)
+   - Column 4: Assists (A)
+   - Column 5: Deaths (D)
+
+3. For each column:
+   - Start at the very top row
+   - Move down row by row
+   - Record each value in order
+   - Use null for any missing or unclear values
+   - Ensure you maintain the exact same order for all columns
+
+4. For team games:
+   - Note which team (1 or 2) each player is on
+   - Identify the winning team (team with highest total score)
+
+Return a JSON object with this exact structure:
 {
-  "gameMode": "Slayer|Team Slayer",
-  "winningTeam": number|null,
-  "columns": {
-    "names": string[],    // Player names from top to bottom
-    "scores": number[],   // Total scores from top to bottom
-    "kills": number[],    // Kills from top to bottom
-    "assists": number[],  // Assists from top to bottom
-    "deaths": number[]    // Deaths from top to bottom
-  },
-  "teams": number[]|null  // Team numbers (1 or 2) from top to bottom, null array for Slayer
+  "gameMode": "Team Slayer" or "Slayer",
+  "winningTeam": number or null,
+  "data": {
+    "names": string[],     // Names in exact order from top to bottom
+    "scores": (number|null)[],  // Scores in same order
+    "kills": (number|null)[],   // Kills in same order
+    "assists": (number|null)[], // Assists in same order
+    "deaths": (number|null)[],  // Deaths in same order
+    "teams": (number|null)[]    // Team numbers (1 or 2) in same order, or null array for Slayer
+  }
 }
 
-Important notes:
-- Extract each column's data in order from top to bottom
-- All arrays must have the same length
-- Ensure numbers are integers
-- Double check column order: Names, Scores, Kills, Assists, Deaths
-- For team games, include team numbers; for Slayer, use null array
-- winningTeam should be null for non-team games`
+CRITICAL:
+- All arrays MUST have the same length
+- Maintain exact top-to-bottom order across all arrays
+- Use null for any unclear or missing values
+- Double-check that values are from correct columns
+- Verify team assignments if present`
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: `Extract the scoreboard data column by column, maintaining the order from top to bottom. Remember the column order is: Names, Scores, Kills, Assists, Deaths.`
+                text: `Analyze this scoreboard image. Extract each column's data separately, maintaining strict top-to-bottom order. Remember: Names, Scores, Kills, Assists, Deaths.`
               },
               {
                 type: 'image_url',
@@ -93,27 +111,51 @@ Important notes:
 
     // Parse the extracted data
     const parsedData = JSON.parse(result);
+    console.log('Parsed data:', parsedData);
     
     // Match extracted data with known player names
     const matchedScores: Record<string, any> = {};
-    const { columns } = parsedData;
+    const { data: columns } = parsedData;
 
-    // Zip the columns together and match with known players
-    columns.names.forEach((name: string, index: number) => {
-      const matchedName = playerNames.find(knownName => 
-        knownName.toLowerCase() === name.toLowerCase() ||
-        knownName.toLowerCase().includes(name.toLowerCase()) ||
-        name.toLowerCase().includes(knownName.toLowerCase())
-      );
+    // Enhanced name matching with logging
+    columns.names.forEach((extractedName: string, index: number) => {
+      console.log(`Processing extracted name: "${extractedName}"`);
+      
+      if (!extractedName) {
+        console.log('Skipping empty name');
+        return;
+      }
+
+      const normalizedExtractedName = extractedName.toLowerCase().trim();
+      
+      // Find the best matching player name
+      const matchedName = playerNames.find(knownName => {
+        const normalizedKnownName = knownName.toLowerCase().trim();
+        
+        // Try different matching strategies
+        const exactMatch = normalizedKnownName === normalizedExtractedName;
+        const containsMatch = normalizedKnownName.includes(normalizedExtractedName) || 
+                            normalizedExtractedName.includes(normalizedKnownName);
+        
+        console.log(`Comparing with "${knownName}":`, {
+          exactMatch,
+          containsMatch
+        });
+        
+        return exactMatch || containsMatch;
+      });
 
       if (matchedName) {
+        console.log(`Matched "${extractedName}" to "${matchedName}"`);
         matchedScores[matchedName] = {
-          score: columns.scores[index],
-          kills: columns.kills[index],
-          assists: columns.assists[index],
-          deaths: columns.deaths[index],
-          team: parsedData.teams ? parsedData.teams[index] : null
+          score: columns.scores[index] ?? 0,
+          kills: columns.kills[index] ?? 0,
+          assists: columns.assists[index] ?? 0,
+          deaths: columns.deaths[index] ?? 0,
+          team: columns.teams ? columns.teams[index] : null
         };
+      } else {
+        console.log(`No match found for "${extractedName}"`);
       }
     });
 
@@ -123,7 +165,7 @@ Important notes:
       scores: matchedScores
     };
 
-    console.log('Matched scores:', finalResult);
+    console.log('Final matched scores:', finalResult);
 
     return new Response(
       JSON.stringify({ result: JSON.stringify(finalResult) }),

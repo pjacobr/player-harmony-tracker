@@ -10,9 +10,9 @@ import { GameScore } from "@/types/gameScore";
 import { GameScreenshot } from "./GameScreenshot";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
+import { reanalyzeScreenshot } from "@/utils/gameAnalysis";
 
 interface GameItemProps {
   game: {
@@ -23,20 +23,7 @@ interface GameItemProps {
       name: string;
     } | null;
     screenshot_url: string | null;
-    scores: Array<{
-      id: string;
-      player_id: string;
-      player: {
-        name: string;
-      };
-      kills: number;
-      deaths: number;
-      assists: number;
-      won: boolean;
-      team_number: number | null;
-      max_game_score: number | null;
-      score: number;
-    }>;
+    scores: GameScore[];
   };
 }
 
@@ -46,59 +33,8 @@ export function GameItem({ game }: GameItemProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const reanalyzeScreenshot = useMutation({
-    mutationFn: async () => {
-      if (!game.screenshot_url) {
-        throw new Error("No screenshot available for this game");
-      }
-
-      const playerNames = game.scores.map(score => score.player.name);
-      
-      console.log('Reanalyzing screenshot:', game.screenshot_url);
-      console.log('Players to match:', playerNames);
-
-      const { data: analysisData, error: analysisError } = await supabase.functions
-        .invoke('analyze-screenshot', {
-          body: { 
-            imageUrl: game.screenshot_url,
-            playerNames: playerNames
-          },
-        });
-
-      if (analysisError) throw analysisError;
-
-      const result = JSON.parse(analysisData.result);
-      console.log('Analysis result:', result);
-
-      // Update all scores for this game
-      const { error: updateError } = await supabase
-        .from('game_scores')
-        .upsert(
-          Object.entries(result.scores).map(([playerName, stats]: [string, any]) => {
-            const player = game.scores.find(s => s.player.name === playerName);
-            if (!player) return null;
-
-            return {
-              id: player.id,
-              player_id: player.player_id,
-              game_id: game.id,
-              kills: stats.kills || 0,
-              deaths: stats.deaths || 0,
-              assists: stats.assists || 0,
-              score: stats.score || 0,
-              team_number: stats.team || null,
-              won: stats.team === result.winningTeam,
-              game_mode: game.game_mode,
-              created_at: game.created_at,
-              screenshot_url: game.screenshot_url,
-              map_id: null // Since we don't have access to map_id in this context
-            };
-          }).filter(Boolean)
-        );
-
-      if (updateError) throw updateError;
-      return result;
-    },
+  const reanalyzeScreenshotMutation = useMutation({
+    mutationFn: () => reanalyzeScreenshot(game),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['game-logs'] });
       toast({
@@ -115,25 +51,6 @@ export function GameItem({ game }: GameItemProps) {
       });
     },
   });
-
-  // Map the scores to include all required GameScore properties
-  const mappedScores: GameScore[] = game.scores.map(score => ({
-    id: score.id,
-    game_id: game.id,
-    player_id: score.player_id,
-    kills: score.kills,
-    deaths: score.deaths,
-    assists: score.assists,
-    score: score.score || 0,
-    won: score.won,
-    created_at: game.created_at,
-    game_mode: game.game_mode,
-    team_number: score.team_number,
-    screenshot_url: game.screenshot_url,
-    map: game.map,
-    player: score.player,
-    max_game_score: score.max_game_score
-  }));
 
   return (
     <AccordionItem value={game.id}>
@@ -155,11 +72,11 @@ export function GameItem({ game }: GameItemProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => reanalyzeScreenshot.mutate()}
-                  disabled={reanalyzeScreenshot.isPending}
+                  onClick={() => reanalyzeScreenshotMutation.mutate()}
+                  disabled={reanalyzeScreenshotMutation.isPending}
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  {reanalyzeScreenshot.isPending ? "Reanalyzing..." : "Reanalyze Screenshot"}
+                  {reanalyzeScreenshotMutation.isPending ? "Reanalyzing..." : "Reanalyze Screenshot"}
                 </Button>
               </div>
               <GameScreenshot url={game.screenshot_url} />
@@ -167,7 +84,7 @@ export function GameItem({ game }: GameItemProps) {
           )}
           
           <GameScoreList
-            scores={mappedScores}
+            scores={game.scores}
             gameId={game.id}
             gameMode={game.game_mode}
             mapName={game.map?.name}

@@ -20,6 +20,10 @@ serve(async (req) => {
       throw new Error('No image URL provided');
     }
 
+    // Clean and validate the URL
+    const cleanUrl = new URL(imageUrl).toString();
+    console.log('Cleaned URL:', cleanUrl);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -27,66 +31,43 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4-vision-preview',
         messages: [
           {
             role: 'system',
-            content: `You are a specialized Halo scoreboard analyzer. Your task is to extract data from a Halo game scoreboard image with extreme precision.
+            content: `You are a specialized Halo scoreboard analyzer. Extract data from each column separately, maintaining strict top-to-bottom order.
 
-Follow these steps exactly:
+Instructions:
+1. For each column, start at the top and work down
+2. Record each value in exact order
+3. Use null for any unclear or missing values
+4. Keep arrays aligned - same length for all columns
 
-1. First, identify if this is a Team game (look for team indicators) or Slayer (no teams).
-
-2. For each column, working left to right:
-   - Column 1: Player Names (leftmost)
-   - Column 2: Total Score
-   - Column 3: Kills (K)
-   - Column 4: Assists (A)
-   - Column 5: Deaths (D)
-
-3. For each column:
-   - Start at the very top row
-   - Move down row by row
-   - Record each value in order
-   - Use null for any missing or unclear values
-   - Ensure you maintain the exact same order for all columns
-
-4. For team games:
-   - Note which team (1 or 2) each player is on
-   - Identify the winning team (team with highest total score)
-
-Return a JSON object with this exact structure:
+Return data in this format:
 {
   "gameMode": "Team Slayer" or "Slayer",
   "winningTeam": number or null,
   "data": {
-    "names": string[],     // Names in exact order from top to bottom
-    "scores": (number|null)[],  // Scores in same order
-    "kills": (number|null)[],   // Kills in same order
-    "assists": (number|null)[], // Assists in same order
-    "deaths": (number|null)[],  // Deaths in same order
-    "teams": (number|null)[]    // Team numbers (1 or 2) in same order, or null array for Slayer
+    "names": string[],     // Player names in order
+    "scores": number[],    // Scores in same order
+    "kills": number[],     // Kills in same order
+    "assists": number[],   // Assists in same order
+    "deaths": number[],    // Deaths in same order
+    "teams": number[]      // Team numbers in same order (or null array for Slayer)
   }
-}
-
-CRITICAL:
-- All arrays MUST have the same length
-- Maintain exact top-to-bottom order across all arrays
-- Use null for any unclear or missing values
-- Double-check that values are from correct columns
-- Verify team assignments if present`
+}`
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: `Analyze this scoreboard image. Extract each column's data separately, maintaining strict top-to-bottom order. Remember: Names, Scores, Kills, Assists, Deaths.`
+                text: 'Extract data from this scoreboard image. Process each column separately, maintaining strict top-to-bottom order.'
               },
               {
                 type: 'image_url',
                 image_url: {
-                  url: imageUrl
+                  url: cleanUrl
                 }
               }
             ],
@@ -131,18 +112,9 @@ CRITICAL:
       // Find the best matching player name
       const matchedName = playerNames.find(knownName => {
         const normalizedKnownName = knownName.toLowerCase().trim();
-        
-        // Try different matching strategies
-        const exactMatch = normalizedKnownName === normalizedExtractedName;
-        const containsMatch = normalizedKnownName.includes(normalizedExtractedName) || 
-                            normalizedExtractedName.includes(normalizedKnownName);
-        
-        console.log(`Comparing with "${knownName}":`, {
-          exactMatch,
-          containsMatch
-        });
-        
-        return exactMatch || containsMatch;
+        return normalizedKnownName === normalizedExtractedName ||
+               normalizedKnownName.includes(normalizedExtractedName) ||
+               normalizedExtractedName.includes(normalizedKnownName);
       });
 
       if (matchedName) {

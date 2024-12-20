@@ -35,6 +35,7 @@ interface GameItemProps {
       won: boolean;
       team_number: number | null;
       max_game_score: number | null;
+      score: number;
     }>;
   };
 }
@@ -51,6 +52,7 @@ export function GameItem({ game }: GameItemProps) {
     kills: score.kills,
     deaths: score.deaths,
     assists: score.assists,
+    score: score.score || 0,
     won: score.won,
     created_at: game.created_at,
     game_mode: game.game_mode,

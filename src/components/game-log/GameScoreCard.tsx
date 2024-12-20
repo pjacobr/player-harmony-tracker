@@ -24,6 +24,7 @@ interface GameScoreProps {
     assists: number;
     won: boolean;
     team_number: number | null;
+    score: number;
   };
 }
 
@@ -34,6 +35,7 @@ export function GameScoreCard({ score }: GameScoreProps) {
     deaths: score.deaths,
     assists: score.assists,
     team_number: score.team_number,
+    score: score.score || 0,
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -75,13 +77,15 @@ export function GameScoreCard({ score }: GameScoreProps) {
       deaths: Math.max(0, editedScore.deaths),
       assists: Math.max(0, editedScore.assists),
       team_number: editedScore.team_number,
+      score: Math.max(0, editedScore.score),
     };
 
     if (
       validatedScore.kills !== score.kills ||
       validatedScore.deaths !== score.deaths ||
       validatedScore.assists !== score.assists ||
-      validatedScore.team_number !== score.team_number
+      validatedScore.team_number !== score.team_number ||
+      validatedScore.score !== score.score
     ) {
       updateScoreMutation.mutate(validatedScore);
     } else {
@@ -95,11 +99,12 @@ export function GameScoreCard({ score }: GameScoreProps) {
       deaths: score.deaths,
       assists: score.assists,
       team_number: score.team_number,
+      score: score.score || 0,
     });
     setIsEditing(false);
   };
 
-  const handleInputChange = (field: 'kills' | 'deaths' | 'assists', value: string) => {
+  const handleInputChange = (field: 'kills' | 'deaths' | 'assists' | 'score', value: string) => {
     const numValue = parseInt(value) || 0;
     setEditedScore(prev => ({
       ...prev,
@@ -166,6 +171,12 @@ export function GameScoreCard({ score }: GameScoreProps) {
             value={editedScore.deaths}
             isEditing={isEditing}
             onChange={(value) => handleInputChange('deaths', value)}
+          />
+          <ScoreInput
+            label="Score"
+            value={editedScore.score}
+            isEditing={isEditing}
+            onChange={(value) => handleInputChange('score', value)}
           />
         </div>
         

@@ -27,52 +27,43 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing Halo game screenshots. You will extract data from the scoreboard in a structured way.
+            content: `You are an expert at analyzing Halo game screenshots. Extract data from the scoreboard by columns.
 
 First, determine if this is a team game or individual game (Slayer).
-Then, extract ALL player data from the scoreboard in order from top to bottom.
-
-For each row in the scoreboard, extract these values IN ORDER:
-1. Player Name (leftmost)
-2. Score
-3. Kills
-4. Assists
-5. Deaths (rightmost)
+Then, extract data from EACH COLUMN separately, maintaining the exact order from top to bottom.
 
 Return a JSON object with this EXACT structure:
 {
   "gameMode": "Slayer|Team Slayer",
   "winningTeam": number|null,
-  "playerData": [
-    {
-      "name": "string",
-      "score": number,
-      "kills": number,
-      "assists": number,
-      "deaths": number,
-      "team": number|null
-    }
-  ]
+  "columns": {
+    "names": string[],    // Player names from top to bottom
+    "scores": number[],   // Total scores from top to bottom
+    "kills": number[],    // Kills from top to bottom
+    "assists": number[],  // Assists from top to bottom
+    "deaths": number[]    // Deaths from top to bottom
+  },
+  "teams": number[]|null  // Team numbers (1 or 2) from top to bottom, null array for Slayer
 }
 
 Important notes:
-- Extract ALL players in order from top to bottom
-- Include team numbers (1 or 2) for team games, null for Slayer
-- winningTeam should be null for non-team games
-- Ensure all numbers are integers
-- Pay special attention to the order of columns: Name, Score, Kills, Assists, Deaths
-- Double check you're reading numbers from the correct columns`
+- Extract each column's data in order from top to bottom
+- All arrays must have the same length
+- Ensure numbers are integers
+- Double check column order: Names, Scores, Kills, Assists, Deaths
+- For team games, include team numbers; for Slayer, use null array
+- winningTeam should be null for non-team games`
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: `Extract ALL player data from this scoreboard in order from top to bottom. Remember the column order is: Name, Score, Kills, Assists, Deaths.`
+                text: `Extract the scoreboard data column by column, maintaining the order from top to bottom. Remember the column order is: Names, Scores, Kills, Assists, Deaths.`
               },
               {
                 type: 'image_url',
@@ -105,23 +96,23 @@ Important notes:
     
     // Match extracted data with known player names
     const matchedScores: Record<string, any> = {};
-    const knownPlayers = new Set(playerNames.map((name: string) => name.toLowerCase()));
+    const { columns } = parsedData;
 
-    parsedData.playerData.forEach((player: any) => {
-      const playerName = player.name;
-      const matchedName = playerNames.find(name => 
-        name.toLowerCase() === playerName.toLowerCase() ||
-        name.toLowerCase().includes(playerName.toLowerCase()) ||
-        playerName.toLowerCase().includes(name.toLowerCase())
+    // Zip the columns together and match with known players
+    columns.names.forEach((name: string, index: number) => {
+      const matchedName = playerNames.find(knownName => 
+        knownName.toLowerCase() === name.toLowerCase() ||
+        knownName.toLowerCase().includes(name.toLowerCase()) ||
+        name.toLowerCase().includes(knownName.toLowerCase())
       );
 
       if (matchedName) {
         matchedScores[matchedName] = {
-          score: player.score,
-          kills: player.kills,
-          assists: player.assists,
-          deaths: player.deaths,
-          team: player.team
+          score: columns.scores[index],
+          kills: columns.kills[index],
+          assists: columns.assists[index],
+          deaths: columns.deaths[index],
+          team: parsedData.teams ? parsedData.teams[index] : null
         };
       }
     });

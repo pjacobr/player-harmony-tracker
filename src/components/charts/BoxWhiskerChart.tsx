@@ -24,35 +24,38 @@ interface BoxWhiskerChartProps {
 
 export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
   const transformedData = useMemo(() => {
-    // First, find the maximum score for each game mode type
+    // First, find the maximum score for each game
     const gameMaxScores = data.reduce((maxScores, player) => {
       const playerGames = player.games || [];
       playerGames.forEach(game => {
         const gameId = game.game_id;
-        const gameMode = game.game_mode || 'Slayer';
-        
         if (!maxScores[gameId]) {
           maxScores[gameId] = {
-            mode: gameMode,
-            maxScore: 0
+            maxScore: 0,
+            teamScores: {} as Record<number, number>
           };
         }
 
-        // For team games, sum up all scores for the same team
-        if (game.team_number) {
-          const teamScores = playerGames
-            .filter(g => g.game_id === gameId && g.team_number === game.team_number)
-            .reduce((sum, g) => sum + g.kills, 0);
-          maxScores[gameId].maxScore = Math.max(maxScores[gameId].maxScore, teamScores);
+        // For team games, track team scores separately
+        if (game.team_number !== null) {
+          if (!maxScores[gameId].teamScores[game.team_number]) {
+            maxScores[gameId].teamScores[game.team_number] = 0;
+          }
+          maxScores[gameId].teamScores[game.team_number] += game.kills;
+          // Update max score if this team's total is higher
+          maxScores[gameId].maxScore = Math.max(
+            maxScores[gameId].maxScore,
+            maxScores[gameId].teamScores[game.team_number]
+          );
         } else {
           // For free-for-all, track individual highest score
           maxScores[gameId].maxScore = Math.max(maxScores[gameId].maxScore, game.kills);
         }
       });
       return maxScores;
-    }, {} as Record<string, { mode: string; maxScore: number }>);
+    }, {} as Record<string, { maxScore: number; teamScores: Record<number, number> }>);
 
-    // Now normalize the scores based on game type and max scores
+    // Now normalize the scores based on game max scores
     const normalizedData = data.map(player => {
       const kills = (player.games || []).map(game => {
         const maxScore = gameMaxScores[game.game_id]?.maxScore || 25; // fallback to 25

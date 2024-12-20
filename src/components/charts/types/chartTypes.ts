@@ -14,3 +14,13 @@ export interface BoxWhiskerData {
     game_mode: string | null;
   }>;
 }
+
+export interface TransformedBoxWhiskerData {
+  name: string;
+  min: number;
+  bottomWhisker: number;
+  bottomBox: number;
+  topBox: number;
+  topWhisker: number;
+  originalData: BoxWhiskerData;
+}

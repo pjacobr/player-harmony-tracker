@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -32,15 +31,13 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing Halo game screenshots. The screenshots follow a specific format:
+            content: `You are an expert at analyzing Halo game screenshots. The screenshots show a scoreboard with data in this EXACT order from left to right:
 
-1. Top left corner shows the winning team/player and game mode (either "Team Slayer" or "Slayer")
-2. Below that is a table with columns in this exact order:
-   - Players (player names)
-   - Score (total score)
-   - Kills (number of kills)
-   - Assists (number of assists)
-   - Deaths (number of deaths)
+1. Player Names (leftmost column)
+2. Score (total score for the player)
+3. Kills
+4. Assists
+5. Deaths (rightmost column)
 
 For team games:
 - Players are grouped by their team
@@ -70,14 +67,16 @@ Notes:
 - Only include data for the specified player names
 - Ensure all numbers are integers
 - If a player's stats cannot be found, exclude them from the response
-- The score column is separate from kills and should be included in the output`,
+- Pay special attention to the order of columns: Name, Score, Kills, Assists, Deaths
+- The score column is separate from kills and should be included in the output
+- Double check that you're reading the numbers from the correct columns based on this order`,
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: `Extract the game mode, scores, K/D/A stats, team information, and winning team for these specific players: ${playerNames.join(', ')}. Return only JSON, no markdown.`
+                text: `Extract the game mode, scores, and stats for these specific players: ${playerNames.join(', ')}. Remember the column order is: Name, Score, Kills, Assists, Deaths. Return only JSON, no markdown.`
               },
               {
                 type: 'image_url',
@@ -100,14 +99,11 @@ Notes:
       throw new Error('Invalid response from OpenAI API');
     }
 
-    // Clean up the response by removing any markdown formatting
     let result = data.choices[0].message.content;
-    // Remove markdown code block syntax if present
     result = result.replace(/```json\n|\n```/g, '');
     
     console.log('Cleaned result:', result);
 
-    // Validate that the result is valid JSON
     try {
       JSON.parse(result);
     } catch (e) {

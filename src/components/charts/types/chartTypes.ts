@@ -6,6 +6,7 @@ export interface BoxWhiskerData {
   q3?: number;
   max?: number;
   average?: number;
+  totalGames?: number;
   kdSpread: number;
   games?: Array<{
     game_id: string;

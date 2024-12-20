@@ -80,12 +80,18 @@ export function GameItem({ game }: GameItemProps) {
 
             return {
               id: player.id,
+              player_id: player.player_id,
+              game_id: game.id,
               kills: stats.kills,
               deaths: stats.deaths,
               assists: stats.assists,
               score: stats.score,
               team_number: stats.team || null,
-              won: stats.team === result.winningTeam
+              won: stats.team === result.winningTeam,
+              game_mode: game.game_mode,
+              created_at: game.created_at,
+              screenshot_url: game.screenshot_url,
+              map_id: null // Since we don't have access to map_id in this context
             };
           }).filter(Boolean)
         );

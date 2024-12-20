@@ -6,6 +6,7 @@ interface ProcessedScore {
   kills: number;
   deaths: number;
   assists: number;
+  score: number;
   team: number | null;
   won: boolean;
 }
@@ -27,6 +28,7 @@ export const processScores = (
           kills: scores.kills || 0,
           deaths: scores.deaths || 0,
           assists: scores.assists || 0,
+          score: scores.score || 0,
           team: scores.team || null,
           won: scores.team === winningTeam
         };
@@ -49,6 +51,7 @@ export const prepareGameScoreRows = (
     kills: score.kills,
     deaths: score.deaths,
     assists: score.assists,
+    score: score.score,
     map_id: mapId,
     game_mode: gameMode,
     team_number: score.team,

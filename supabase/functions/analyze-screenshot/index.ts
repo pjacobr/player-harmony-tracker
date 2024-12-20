@@ -55,6 +55,7 @@ Return ONLY a JSON object with no markdown formatting in this format:
   "winningTeam": number|null,
   "scores": {
     "playerName": {
+      "score": number,
       "kills": number,
       "assists": number,
       "deaths": number,
@@ -68,14 +69,15 @@ Notes:
 - team should be null for non-team games
 - Only include data for the specified player names
 - Ensure all numbers are integers
-- If a player's stats cannot be found, exclude them from the response`,
+- If a player's stats cannot be found, exclude them from the response
+- The score column is separate from kills and should be included in the output`,
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: `Extract the game mode, K/D/A scores, team information, and winning team for these specific players: ${playerNames.join(', ')}. Return only JSON, no markdown.`
+                text: `Extract the game mode, scores, K/D/A stats, team information, and winning team for these specific players: ${playerNames.join(', ')}. Return only JSON, no markdown.`
               },
               {
                 type: 'image_url',

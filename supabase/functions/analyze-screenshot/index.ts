@@ -31,52 +31,48 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing Halo game screenshots. The screenshots show a scoreboard with data in this EXACT order from left to right:
+            content: `You are an expert at analyzing Halo game screenshots. You will extract data from the scoreboard in a structured way.
 
-1. Player Names (leftmost column)
-2. Score (total score for the player)
+First, determine if this is a team game or individual game (Slayer).
+Then, extract ALL player data from the scoreboard in order from top to bottom.
+
+For each row in the scoreboard, extract these values IN ORDER:
+1. Player Name (leftmost)
+2. Score
 3. Kills
 4. Assists
-5. Deaths (rightmost column)
+5. Deaths (rightmost)
 
-For team games:
-- Players are grouped by their team
-- Team scores are shown at the top
-- The winning team is clearly indicated
-
-Extract data ONLY for these specific players: ${playerNames.join(', ')}. Try to match player names even if they have slight variations in capitalization or special characters.
-
-Return ONLY a JSON object with no markdown formatting in this format:
+Return a JSON object with this EXACT structure:
 {
   "gameMode": "Slayer|Team Slayer",
   "winningTeam": number|null,
-  "scores": {
-    "playerName": {
+  "playerData": [
+    {
+      "name": "string",
       "score": number,
       "kills": number,
       "assists": number,
       "deaths": number,
       "team": number|null
     }
-  }
+  ]
 }
 
-Notes:
-- winningTeam should be null for non-team games (regular Slayer)
-- team should be null for non-team games
-- Only include data for the specified player names
+Important notes:
+- Extract ALL players in order from top to bottom
+- Include team numbers (1 or 2) for team games, null for Slayer
+- winningTeam should be null for non-team games
 - Ensure all numbers are integers
-- If a player's stats cannot be found, exclude them from the response
 - Pay special attention to the order of columns: Name, Score, Kills, Assists, Deaths
-- The score column is separate from kills and should be included in the output
-- Double check that you're reading the numbers from the correct columns based on this order`,
+- Double check you're reading numbers from the correct columns`
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: `Extract the game mode, scores, and stats for these specific players: ${playerNames.join(', ')}. Remember the column order is: Name, Score, Kills, Assists, Deaths. Return only JSON, no markdown.`
+                text: `Extract ALL player data from this scoreboard in order from top to bottom. Remember the column order is: Name, Score, Kills, Assists, Deaths.`
               },
               {
                 type: 'image_url',
@@ -87,7 +83,7 @@ Notes:
             ],
           },
         ],
-        max_tokens: 500,
+        max_tokens: 1000,
       }),
     });
 
@@ -102,17 +98,44 @@ Notes:
     let result = data.choices[0].message.content;
     result = result.replace(/```json\n|\n```/g, '');
     
-    console.log('Cleaned result:', result);
+    console.log('Raw extracted data:', result);
 
-    try {
-      JSON.parse(result);
-    } catch (e) {
-      console.error('Invalid JSON in result:', result);
-      throw new Error('OpenAI returned invalid JSON format');
-    }
+    // Parse the extracted data
+    const parsedData = JSON.parse(result);
+    
+    // Match extracted data with known player names
+    const matchedScores: Record<string, any> = {};
+    const knownPlayers = new Set(playerNames.map((name: string) => name.toLowerCase()));
+
+    parsedData.playerData.forEach((player: any) => {
+      const playerName = player.name;
+      const matchedName = playerNames.find(name => 
+        name.toLowerCase() === playerName.toLowerCase() ||
+        name.toLowerCase().includes(playerName.toLowerCase()) ||
+        playerName.toLowerCase().includes(name.toLowerCase())
+      );
+
+      if (matchedName) {
+        matchedScores[matchedName] = {
+          score: player.score,
+          kills: player.kills,
+          assists: player.assists,
+          deaths: player.deaths,
+          team: player.team
+        };
+      }
+    });
+
+    const finalResult = {
+      gameMode: parsedData.gameMode,
+      winningTeam: parsedData.winningTeam,
+      scores: matchedScores
+    };
+
+    console.log('Matched scores:', finalResult);
 
     return new Response(
-      JSON.stringify({ result }),
+      JSON.stringify({ result: JSON.stringify(finalResult) }),
       { 
         headers: { 
           ...corsHeaders, 

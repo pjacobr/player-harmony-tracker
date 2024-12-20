@@ -30,6 +30,7 @@ export function GameLog() {
           kills,
           deaths,
           assists,
+          score,
           won,
           created_at,
           game_mode,

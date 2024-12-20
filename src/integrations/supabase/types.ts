@@ -19,6 +19,7 @@ export type Database = {
           id: string
           kills: number
           map_id: string | null
+          max_game_score: number | null
           player_id: string
           screenshot_url: string | null
           team_number: number | null
@@ -33,6 +34,7 @@ export type Database = {
           id?: string
           kills?: number
           map_id?: string | null
+          max_game_score?: number | null
           player_id: string
           screenshot_url?: string | null
           team_number?: number | null
@@ -47,6 +49,7 @@ export type Database = {
           id?: string
           kills?: number
           map_id?: string | null
+          max_game_score?: number | null
           player_id?: string
           screenshot_url?: string | null
           team_number?: number | null

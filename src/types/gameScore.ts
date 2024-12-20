@@ -16,4 +16,5 @@ export interface GameScore {
   player: {
     name: string;
   };
+  max_game_score?: number | null;
 }

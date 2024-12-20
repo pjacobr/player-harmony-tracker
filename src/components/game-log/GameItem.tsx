@@ -34,12 +34,14 @@ interface GameItemProps {
       assists: number;
       won: boolean;
       team_number: number | null;
+      max_game_score: number | null;
     }>;
   };
 }
 
 export function GameItem({ game }: GameItemProps) {
   const { winners, winningTeam } = calculateWinner(game.scores, game.game_mode);
+  const maxGameScore = game.scores[0]?.max_game_score;
 
   // Map the scores to include all required GameScore properties
   const mappedScores: GameScore[] = game.scores.map(score => ({
@@ -55,7 +57,8 @@ export function GameItem({ game }: GameItemProps) {
     team_number: score.team_number,
     screenshot_url: game.screenshot_url,
     map: game.map,
-    player: score.player
+    player: score.player,
+    max_game_score: score.max_game_score
   }));
 
   return (
@@ -67,6 +70,7 @@ export function GameItem({ game }: GameItemProps) {
           createdAt={game.created_at}
           winners={winners}
           winningTeam={winningTeam}
+          maxGameScore={maxGameScore}
         />
       </AccordionTrigger>
       <AccordionContent>

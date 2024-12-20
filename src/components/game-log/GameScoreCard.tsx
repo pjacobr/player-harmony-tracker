@@ -155,6 +155,12 @@ export function GameScoreCard({ score }: GameScoreProps) {
       <div className="flex items-center gap-4 sm:gap-8 w-full sm:w-auto">
         <div className="flex gap-4 sm:gap-8 text-sm flex-1 sm:flex-none justify-between sm:justify-start">
           <ScoreInput
+            label="Score"
+            value={editedScore.score}
+            isEditing={isEditing}
+            onChange={(value) => handleInputChange('score', value)}
+          />
+          <ScoreInput
             label="Kills"
             value={editedScore.kills}
             isEditing={isEditing}
@@ -171,12 +177,6 @@ export function GameScoreCard({ score }: GameScoreProps) {
             value={editedScore.deaths}
             isEditing={isEditing}
             onChange={(value) => handleInputChange('deaths', value)}
-          />
-          <ScoreInput
-            label="Score"
-            value={editedScore.score}
-            isEditing={isEditing}
-            onChange={(value) => handleInputChange('score', value)}
           />
         </div>
         

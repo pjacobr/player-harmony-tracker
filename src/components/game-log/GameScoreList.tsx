@@ -17,13 +17,13 @@ export function GameScoreList({ scores, gameId, gameMode, mapName, screenshotUrl
       <div className="grid grid-cols-[1fr,auto] sm:grid-cols-[1fr,auto,auto] gap-2 p-3 bg-gaming-background/80 text-sm text-gaming-muted">
         <div>Player</div>
         <div className="hidden sm:block text-center">Team</div>
-        <div className="text-right">K/D/A</div>
+        <div className="text-right">Score/K/A/D</div>
       </div>
       
       {/* Score rows */}
       <div className="divide-y divide-gaming-border">
         {scores
-          .sort((a, b) => b.kills - a.kills)
+          .sort((a, b) => (b.score || 0) - (a.score || 0))
           .map((score) => (
             <GameScoreCard 
               key={score.player_id} 

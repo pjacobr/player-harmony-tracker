@@ -6,7 +6,7 @@ import {
 import { GameHeader } from "./GameHeader";
 import { calculateWinner } from "@/utils/gameWinnerUtils";
 import { GameScoreList } from "./GameScoreList";
-import { GameScore } from "@/types/gameScore";
+import { Game } from "@/types/gameScore";
 import { GameScreenshot } from "./GameScreenshot";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,21 +15,11 @@ import { RefreshCw } from "lucide-react";
 import { reanalyzeScreenshot } from "@/utils/gameAnalysis";
 
 interface GameItemProps {
-  game: {
-    id: string;
-    created_at: string;
-    game_mode: string;
-    map: {
-      name: string;
-    } | null;
-    screenshot_url: string | null;
-    scores: GameScore[];
-  };
+  game: Game;
 }
 
 export function GameItem({ game }: GameItemProps) {
   const { winners, winningTeam } = calculateWinner(game.scores, game.game_mode);
-  const maxGameScore = game.scores[0]?.max_game_score;
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -61,7 +51,7 @@ export function GameItem({ game }: GameItemProps) {
           createdAt={game.created_at}
           winners={winners}
           winningTeam={winningTeam}
-          maxGameScore={maxGameScore}
+          maxGameScore={game.max_game_score}
         />
       </AccordionTrigger>
       <AccordionContent>

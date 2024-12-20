@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO, startOfDay } from "date-fns";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export function GameAnalytics() {
   const { data: games } = useQuery({
@@ -14,12 +13,15 @@ export function GameAnalytics() {
           game_id,
           created_at,
           team_number,
-          map:maps!game_scores_map_id_fkey(name),
-          player:players!game_scores_player_id_fkey(name),
           kills,
           deaths,
           assists,
-          won
+          won,
+          game:games!fk_game(
+            game_mode,
+            map:maps!games_map_id_fkey(name)
+          ),
+          player:players!game_scores_player_id_fkey(name)
         `);
       
       if (error) throw error;
@@ -31,7 +33,7 @@ export function GameAnalytics() {
 
   // Calculate unique games per map using Sets, separated by game type
   const gamesPerMap = games.reduce((acc, game) => {
-    const mapName = game.map?.name || "Unknown Map";
+    const mapName = game.game?.map?.name || "Unknown Map";
     if (!acc[mapName]) {
       acc[mapName] = {
         team: new Set(),

@@ -1,5 +1,5 @@
 export interface GameScore {
-  id?: string;
+  id: string;
   game_id: string;
   player_id: string;
   kills: number;
@@ -9,10 +9,19 @@ export interface GameScore {
   won: boolean;
   created_at: string;
   team_number: number | null;
-  map: {
-    name: string;
-  } | null;
   player: {
     name: string;
   };
+}
+
+export interface Game {
+  id: string;
+  created_at: string;
+  game_mode: string;
+  map: {
+    name: string;
+  } | null;
+  screenshot_url: string | null;
+  max_game_score: number | null;
+  scores: GameScore[];
 }

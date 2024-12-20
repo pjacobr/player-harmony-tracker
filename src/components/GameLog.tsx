@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Accordion } from "@/components/ui/accordion";
 import { GameItem } from "./game-log/GameItem";
-import { GameScore } from "@/types/gameScore";
+import { Game } from "@/types/gameScore";
 import { GameAnalytics } from "./game-log/GameAnalytics";
 import { useState } from "react";
 import {
@@ -18,7 +18,7 @@ export function GameLog() {
   const [currentPage, setCurrentPage] = useState(1);
   const gamesPerPage = 10;
 
-  const { data: games, isLoading } = useQuery({
+  const { data: games, isLoading } = useQuery<Game[]>({
     queryKey: ["game-logs"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -39,6 +39,7 @@ export function GameLog() {
             score,
             won,
             team_number,
+            created_at,
             player:players!fk_player(name)
           )
         `)
@@ -48,7 +49,10 @@ export function GameLog() {
 
       return data.map((game) => ({
         ...game,
-        scores: game.game_scores,
+        scores: game.game_scores.map(score => ({
+          ...score,
+          game_id: game.id
+        })),
       }));
     },
   });

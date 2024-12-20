@@ -57,13 +57,26 @@ export const BoxWhiskerChart = ({ data }: BoxWhiskerChartProps) => {
 
     // Now normalize the scores based on game max scores
     const normalizedData = data.map(player => {
-      const kills = (player.games || []).map(game => {
+      const playerGames = player.games || [];
+      if (playerGames.length === 0) {
+        return {
+          name: player.name,
+          min: 0,
+          q1: 0,
+          median: 0,
+          q3: 0,
+          max: 0,
+          average: 0,
+          kdSpread: 0
+        };
+      }
+
+      const kills = playerGames.map(game => {
         const maxScore = gameMaxScores[game.game_id]?.maxScore || 25; // fallback to 25
         return (game.kills / maxScore) * 100; // Convert to percentage of max possible score
       }).sort((a, b) => a - b);
 
       const n = kills.length;
-      if (n === 0) return { ...player, min: 0, q1: 0, median: 0, q3: 0, max: 0, average: 0 };
       
       return {
         name: player.name,

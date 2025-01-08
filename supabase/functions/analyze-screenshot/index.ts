@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -35,25 +36,32 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a specialized Halo scoreboard analyzer. Extract data from each column separately, maintaining strict top-to-bottom order.
+            content: `You are a specialized Halo scoreboard analyzer. Extract player scores from the image and return them in a specific JSON format.
 
 Instructions:
-1. For each column, start at the top and work down
-2. Record each value in exact order
-3. Use null for any unclear or missing values
-4. Keep arrays aligned - same length for all columns
+1. Identify the game mode (Team Slayer or Slayer)
+2. For team games, identify the winning team (1 or 2)
+3. Extract player names and their scores
+4. Return data in this exact format:
 
-Return data in this format:
 {
-  "gameMode": "Team Slayer" or "Slayer",
-  "winningTeam": number or null,
-  "data": {
-    "names": string[],     // Player names in order
-    "scores": number[],    // Scores in same order
-    "kills": number[],     // Kills in same order
-    "assists": number[],   // Assists in same order
-    "deaths": number[],    // Deaths in same order
-    "teams": number[]      // Team numbers in same order (or null array for Slayer)
+  "gameMode": "Team Slayer",
+  "winningTeam": 1,
+  "scores": {
+    "PlayerName1": {
+      "kills": 10,
+      "deaths": 5,
+      "assists": 2,
+      "score": 1250,
+      "team": 1
+    },
+    "PlayerName2": {
+      "kills": 8,
+      "deaths": 7,
+      "assists": 3,
+      "score": 1050,
+      "team": 2
+    }
   }
 }`
           },
@@ -62,7 +70,7 @@ Return data in this format:
             content: [
               {
                 type: 'text',
-                text: 'Extract data from this scoreboard image. Process each column separately, maintaining strict top-to-bottom order.'
+                text: 'Analyze this Halo scoreboard image and extract the scores in the specified JSON format. Match these player names: ' + playerNames.join(', ')
               },
               {
                 type: 'image_url',
@@ -70,10 +78,11 @@ Return data in this format:
                   url: cleanUrl
                 }
               }
-            ],
-          },
+            ]
+          }
         ],
-        max_tokens: 1000,
+        max_tokens: 1500,
+        temperature: 0.1
       }),
     });
 
@@ -95,12 +104,40 @@ Return data in this format:
     console.log('Raw extracted data:', result);
 
     try {
+      // Clean up the response by removing any markdown code blocks
+      result = result.replace(/```json\n|\n```|```/g, '');
+      
       // Try to parse the result as JSON
       const parsedResult = JSON.parse(result);
       console.log('Successfully parsed result:', parsedResult);
-      
+
+      // Validate the structure of the parsed result
+      if (!parsedResult.gameMode || !parsedResult.scores) {
+        throw new Error('Invalid score data structure');
+      }
+
+      // Match the extracted player names with the provided names
+      const matchedScores: Record<string, any> = {};
+      Object.entries(parsedResult.scores).forEach(([extractedName, scoreData]) => {
+        const matchedName = playerNames.find(name => 
+          name.toLowerCase().trim() === extractedName.toLowerCase().trim() ||
+          name.toLowerCase().includes(extractedName.toLowerCase()) ||
+          extractedName.toLowerCase().includes(name.toLowerCase())
+        );
+
+        if (matchedName) {
+          matchedScores[matchedName] = scoreData;
+        }
+      });
+
+      const finalResult = {
+        gameMode: parsedResult.gameMode,
+        winningTeam: parsedResult.winningTeam,
+        scores: matchedScores
+      };
+
       return new Response(
-        JSON.stringify({ result: JSON.stringify(parsedResult) }),
+        JSON.stringify({ result: JSON.stringify(finalResult) }),
         { 
           headers: { 
             ...corsHeaders, 

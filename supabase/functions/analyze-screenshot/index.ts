@@ -13,7 +13,7 @@ serve(async (req) => {
 
   try {
     const { imageUrl, playerNames } = await req.json();
-    console.log('Received image URL:', imageUrl);
+    console.log('Processing image URL:', imageUrl);
     console.log('Player names to match:', playerNames);
 
     if (!imageUrl) {
@@ -31,7 +31,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4-vision-preview',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -77,83 +77,48 @@ Return data in this format:
       }),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error response:', errorText);
+      throw new Error(`OpenAI API error: ${errorText}`);
+    }
+
     const data = await response.json();
-    console.log('OpenAI API Response:', data);
+    console.log('OpenAI API Response:', JSON.stringify(data, null, 2));
 
     if (!data.choices?.[0]?.message?.content) {
-      console.error('Invalid OpenAI response:', data);
-      throw new Error('Invalid response from OpenAI API');
+      console.error('Invalid OpenAI response structure:', data);
+      throw new Error('Invalid response structure from OpenAI API');
     }
 
     let result = data.choices[0].message.content;
-    result = result.replace(/```json\n|\n```/g, '');
-    
     console.log('Raw extracted data:', result);
 
-    // Parse the extracted data
-    const parsedData = JSON.parse(result);
-    console.log('Parsed data:', parsedData);
-    
-    // Match extracted data with known player names
-    const matchedScores: Record<string, any> = {};
-    const { data: columns } = parsedData;
-
-    // Enhanced name matching with logging
-    columns.names.forEach((extractedName: string, index: number) => {
-      console.log(`Processing extracted name: "${extractedName}"`);
+    try {
+      // Try to parse the result as JSON
+      const parsedResult = JSON.parse(result);
+      console.log('Successfully parsed result:', parsedResult);
       
-      if (!extractedName) {
-        console.log('Skipping empty name');
-        return;
-      }
-
-      const normalizedExtractedName = extractedName.toLowerCase().trim();
-      
-      // Find the best matching player name
-      const matchedName = playerNames.find(knownName => {
-        const normalizedKnownName = knownName.toLowerCase().trim();
-        return normalizedKnownName === normalizedExtractedName ||
-               normalizedKnownName.includes(normalizedExtractedName) ||
-               normalizedExtractedName.includes(normalizedKnownName);
-      });
-
-      if (matchedName) {
-        console.log(`Matched "${extractedName}" to "${matchedName}"`);
-        matchedScores[matchedName] = {
-          score: columns.scores[index] ?? 0,
-          kills: columns.kills[index] ?? 0,
-          assists: columns.assists[index] ?? 0,
-          deaths: columns.deaths[index] ?? 0,
-          team: columns.teams ? columns.teams[index] : null
-        };
-      } else {
-        console.log(`No match found for "${extractedName}"`);
-      }
-    });
-
-    const finalResult = {
-      gameMode: parsedData.gameMode,
-      winningTeam: parsedData.winningTeam,
-      scores: matchedScores
-    };
-
-    console.log('Final matched scores:', finalResult);
-
-    return new Response(
-      JSON.stringify({ result: JSON.stringify(finalResult) }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
+      return new Response(
+        JSON.stringify({ result: JSON.stringify(parsedResult) }),
+        { 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response as JSON:', parseError);
+      console.log('Failed to parse content:', result);
+      throw new Error('Failed to parse OpenAI response as JSON');
+    }
   } catch (error) {
     console.error('Error in analyze-screenshot function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        details: 'Failed to analyze screenshot'
+        error: 'Invalid response from OpenAI API',
+        details: error.message || 'Failed to analyze screenshot'
       }),
       { 
         headers: { 

@@ -69,19 +69,38 @@ export const useScreenshotUpload = ({ players, onScoresDetected }: UseScreenshot
       const gameId = crypto.randomUUID();
       console.log('Generated game ID:', gameId);
 
-      const rowsToInsert = prepareGameScoreRows(
-        matchedScores,
-        gameId,
-        selectedMap,
-        gameMode,
-        publicUrl
-      );
+      // First, create the game record
+      const { data: gameData, error: gameError } = await supabase
+        .from('games')
+        .insert({
+          id: gameId,
+          game_mode: gameMode,
+          map_id: selectedMap,
+          screenshot_url: publicUrl
+        })
+        .select()
+        .single();
 
-      console.log('Preparing to insert rows:', rowsToInsert);
+      if (gameError) {
+        console.error('Error creating game:', gameError);
+        throw gameError;
+      }
+
+      // Then, prepare and insert the game scores
+      const gameScores = matchedScores.map(score => ({
+        game_id: gameId,
+        player_id: score.id,
+        kills: score.kills,
+        deaths: score.deaths,
+        assists: score.assists,
+        score: score.score || score.kills,
+        team_number: score.team || null,
+        won: score.team === winningTeam
+      }));
 
       const { data: insertedData, error: insertError } = await supabase
         .from('game_scores')
-        .insert(rowsToInsert)
+        .insert(gameScores)
         .select();
 
       if (insertError) {

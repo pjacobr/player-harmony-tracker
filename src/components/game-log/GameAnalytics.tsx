@@ -21,7 +21,7 @@ export function GameAnalytics() {
             game_mode,
             map:maps!games_map_id_fkey(name)
           ),
-          player:players!game_scores_player_id_fkey(name)
+          player:players!fk_player(name)
         `);
       
       if (error) throw error;

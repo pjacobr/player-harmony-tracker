@@ -28,7 +28,10 @@ export const PlayerAnalytics = ({ players }: PlayerAnalyticsProps) => {
         .from('game_scores')
         .select(`
           *,
-          map:maps!game_scores_map_id_fkey(name),
+          game:games!fk_game(
+            game_mode,
+            map:maps!games_map_id_fkey(name)
+          ),
           player:players!fk_player(name)
         `)
         .in('player_id', playerIds)
